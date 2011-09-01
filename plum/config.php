@@ -8,14 +8,17 @@ class Config {
      * Gets a configuration item. Module refers to the name of the config file.
      * TODO: Take in an array for an id to traverse an array in the config.
      */
-    public static function get($id, $module = self::$_default_module) {
+    public static function get($id, $module = null) {
+        if($module == null) {
+            $module = self::$_default_module;
+        }
         if(!isset(self::$_cfg[$module])) {
             throw new Exception("Missing config module."); // TODO: Make this less dumb.
         }
         if(!isset(self::$_cfg[$module][$id])) {
             return false;
         }
-        return self:$_cfg[$module][$id];
+        return self::$_cfg[$module][$id];
     }
 
     /**
@@ -33,12 +36,13 @@ class Config {
         $files = scandir($dir);
         $count = 0;
         foreach($files as $f) {
-            if($f = '.' or $f = '..') {
+            if($f == '.' or $f == '..') {
                 continue;
             }
             $config = array();
             include("{$dir}/{$f}");
-            $_cfg[$f] = $config;
+            $f = preg_replace('/.php/', '', $f);
+            self::$_cfg[$f] = $config;
             $count++;
         }
         return $count;

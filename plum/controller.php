@@ -21,7 +21,7 @@ abstract class Controller {
     /**
      * Functions used by the controller but not required.
      */
-    public function before();
-    public function after();
+    public function before() { return true; }
+    public function after() { return true; }
 }
 ?>
