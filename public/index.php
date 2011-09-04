@@ -8,6 +8,11 @@ try {
     \Plum\HTTP::send_404();
     // Make this less dumb. --jdoane
     print "<p>Error loading the controller: {$cname}.</p>";
+    if(Config::get('debug', 'system')) {
+        // output special stack trace if this is the case and any errors that 
+        // are handy. Consider integrating dBug.php.
+        print "";
+    }
     exit();
 }
 

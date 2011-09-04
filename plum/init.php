@@ -27,6 +27,7 @@ class Init {
 
 // Starts up Plum. (These are primary class names, file names should be lower case.
 Init::core('Exception');
+Init::core('Debug');
 Init::core('Config');
 Init::core('DB');
 Init::core('URI');
