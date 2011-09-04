@@ -7,9 +7,9 @@ class Init {
         $lower = strtolower($module);
         require_once("{$lower}.php");
         if(class_exists("\\Plum\\{$module}")) {
-            if(method_exists("\\Plum\\$module", 'load')) {
+            if(method_exists("\\Plum\\$module", 'init')) {
                 $fqn = "\\Plum\\$module";
-                $fqn::load();
+                $fqn::init();
             }
         }
     }
@@ -32,5 +32,6 @@ Init::core('DB');
 Init::core('URI');
 Init::core('HTTP');
 Init::core('Controller');
+Init::core('View');
 
 Init::app();

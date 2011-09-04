@@ -27,7 +27,7 @@ class URI {
         return $_SERVER['PATH_INFO'];
     }
 
-    public static function load() {
+    public static function init() {
         $data = preg_split('/\//', self::current_uri());
         self::$_current_controller = Config::get('default_controller', 'web');
         self::$_current_method = Config::get('default_method', 'web');

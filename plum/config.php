@@ -30,7 +30,7 @@ class Config {
      *
      * @return int      number of files loaded into config class.
      */
-    public static function load() {
+    public static function init() {
         self::$_cfg = array();
         $dir = dirname(dirname(__FILE__)) . '/config';
         $files = scandir($dir);
@@ -46,5 +46,17 @@ class Config {
             $count++;
         }
         return $count;
+    }
+
+    public static function app_root() {
+        return dirname(dirname(__FILE__)) . '/' . self::get('application_dir', 'system');
+    }
+
+    public static function www_root() {
+        return dirname(dirname(__FILE__));
+    }
+
+    public static function plum_root() {
+        return dirname(dirname(__FILE__)) . '/plum';
     }
 }

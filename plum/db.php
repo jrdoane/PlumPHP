@@ -18,7 +18,6 @@ abstract class DB_Connection {
     }
 
     abstract function connect();
-    abstract function init($server, $port, $username, $password, $db);
     abstract function sql($sql);
     abstract function get_table_identifier();
 }

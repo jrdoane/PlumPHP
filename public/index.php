@@ -1,13 +1,24 @@
 <?php
 // Plum index file that all requests hit.
 require_once(dirname(dirname(__FILE__)) . "/plum/init.php");
-$request = \Plum\URI::get_request_array();
-print_r($request);
-if(!class_exists($request['controller'])) {
-    // Do a 404 or something.
-    // Make this pretty when we have time.
+$cname = \Plum\URI::get_controller();
+try {
+    $controller = \Plum\Controller::factory($cname);
+} catch (Exception $ex) {
     \Plum\HTTP::send_404();
-    print "<p>Controller does not exist.</p>";
+    // Make this less dumb. --jdoane
+    print "<p>Error loading the controller: {$cname}.</p>";
     exit();
 }
-$controller = new $request['controller']();
+
+$method = \Plum\URI::get_method();
+if(!method_exists($controller, $method)) {
+    \Plum\HTTP::send_404();
+    // Make this less dumb. --jdoane
+    print "<p>Action {$method} does not exist in controller {$cname}.</p>";
+    exit();
+}
+
+$controller->before();
+$controller->$method();
+$controller->after();
