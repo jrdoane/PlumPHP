@@ -4,8 +4,12 @@ namespace Plum;
 // Little helper class.
 class Init {
     public static function core($module) {
+        $dir = dirname(__FILE__);
         $lower = strtolower($module);
-        require_once("{$lower}.php");
+        $lower = str_replace("\\", "/", $lower); // Handle deeper namespaces as directories.
+        // Example: \Plum\DB\Connection is going to be in /wwwroot/plum/db/db.php
+        // Init will be: Init::core('DB\Connection');
+        require_once("{$dir}/{$lower}.php");
         if(class_exists("\\Plum\\{$module}")) {
             if(method_exists("\\Plum\\$module", 'init')) {
                 $fqn = "\\Plum\\$module";
@@ -30,6 +34,7 @@ Init::core('Exception');
 Init::core('Debug');
 Init::core('Config');
 Init::core('DB');
+Init::core('DB\PostgreSQL');
 Init::core('URI');
 Init::core('HTTP');
 Init::core('Controller');
