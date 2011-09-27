@@ -13,5 +13,27 @@ class Welcome extends \Plum\Controller {
     }
 
     public function test_db() {
+        $build = \Plum\Html::builder();
+        $sql = "
+            SELECT *
+            FROM test
+        ";
+        $result = \Plum\DB::exec_conn($sql);
+        print_r($result->get_all_obj());
+        $build->tag('body', array(), '', true);
+        foreach($result->get_all_obj() as $row) {
+            $build->p(var_export($row, true));
+        }
+        $build->step_out();
+
+        print $build->get_string();
+    }
+
+    public function sql($sql) {
+        if(empty($sql)) {
+            print "SQL required.";
+            return;
+        }
+        print_r(\Plum\DB::exec_conn($sql));
     }
 }

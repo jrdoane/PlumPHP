@@ -8,10 +8,14 @@ try {
     \Plum\HTTP::send_404();
     // Make this less dumb. --jdoane
     print "<p>Error loading the controller: {$cname}.</p>";
-    if(Config::get('debug', 'system')) {
+    if(\Plum\Config::get('debug', 'system')) {
+        $st = $ex->getTraceAsString();
+        $ext = get_class($ex);
+        $msg = $ex->getMessage();
         // output special stack trace if this is the case and any errors that 
         // are handy. Consider integrating dBug.php.
-        print "";
+        print "<p>Exception ($ext): $msg</p>";
+        print "<pre>Stack Trace\n$st</pre>";
     }
     exit();
 }
@@ -25,5 +29,5 @@ if(!method_exists($controller, $method)) {
 }
 
 $controller->before();
-$controller->$method();
+call_user_func_array(array($controller, $method), \Plum\URI::get_parameters());
 $controller->after();

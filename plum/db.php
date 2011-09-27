@@ -28,11 +28,10 @@ class DB {
             $fqn = "\\Plum\\DB\\{$server['dbtype']}\\Connection";
             $connection = new $fqn($server);
             $server['connection'] = $connection;
-            if($server['default'] and empty(self::$default)){
+            if($server['default'] or empty(self::$default)){
                 self::$default = $server;
-            } else {
-                self::$connections[$config_name] = $server;
             }
+            self::$connections[$config_name] = $server;
         }
     }
 
@@ -42,14 +41,14 @@ class DB {
      */
     static function get_conn($name='') {
         if(!empty($name)) {
-            return isset(self::$connections[$name]) ? self::$connections[$name] : false;
+            return isset(self::$connections[$name]) ? self::$connections[$name]['connection'] : false;
         }
 
-        foreach(self::$connections as $key => &$c) {
-            if($c
-        }
+        return self::$default['connection'];
     }
 
-    static function exec_conn($name = '', $sql) {
+    static function exec_conn($sql, $name='') {
+        $conn = self::get_conn($name);
+        return $conn->sql($sql);
     }
 }

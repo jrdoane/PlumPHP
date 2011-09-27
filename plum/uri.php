@@ -63,7 +63,7 @@ class URI {
         }
         $data = preg_split('/\//', self::current_uri());
         if(empty($data)) {
-            self::$_current_controller = Config::get('default_controller');
+            self::$_current_controller = Config::get('default_controller', 'web');
         }
 
         return self::$_current_controller;

@@ -51,12 +51,13 @@ abstract class Result {
 
     public abstract function __construct($query);
     public abstract function status();
+    public abstract function success();
     public abstract function count_rows_altered();
     public abstract function count_rows_inserted();
+    public abstract function count_rows_returned();
     public abstract function get_rows_inserted();
     public abstract function has_next();
     public abstract function get_next();
     public abstract function get_all_assoc();
     public abstract function get_all_obj();
 }
-

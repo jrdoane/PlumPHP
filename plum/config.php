@@ -12,13 +12,14 @@ class Config {
         if($module == null) {
             $module = self::$_default_module;
         }
-        if(!isset(self::$_cfg[$module])) {
+        if(!isset(self::$_cfg->$module)) {
             throw new Exception("Missing config module."); // TODO: Make this less dumb.
         }
-        if(!isset(self::$_cfg[$module][$id])) {
+        $mdata = self::$_cfg->$module;
+        if(!isset($mdata[$id])) {
             return false;
         }
-        return self::$_cfg[$module][$id];
+        return $mdata[$id];
     }
 
     /**
@@ -31,7 +32,7 @@ class Config {
      * @return int      number of files loaded into config class.
      */
     public static function init() {
-        self::$_cfg = array();
+        self::$_cfg = new stdClass;
         $dir = dirname(dirname(__FILE__)) . '/config';
         $files = scandir($dir);
         $count = 0;
@@ -42,7 +43,7 @@ class Config {
             $config = array();
             include("{$dir}/{$f}");
             $f = preg_replace('/.php/', '', $f);
-            self::$_cfg[$f] = $config;
+            self::$_cfg->$f = $config;
             $count++;
         }
         return $count;

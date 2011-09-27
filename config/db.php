@@ -4,13 +4,13 @@
  * We don't want to handle this well because this is highly discouraged.
  */
 $config['servers'] = array(
-    $config['test_db'] = array(
+    'default' => array(
         'dbtype' => 'PostgreSQL',
         'server' => 'localhost',
         'port' => '5432',
-        'username' => 'plum_peared_net',
+        'username' => 'test',
         'password' => 'lkj123',
-        'database' => 'plum_peared_net',
+        'database' => 'plumphp_test',
         'prefix' => '',
         'persistant' => true,
         'default' => true

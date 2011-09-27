@@ -31,12 +31,14 @@ class Init {
 
 // Starts up Plum. (These are primary class names, file names should be lower case.
 Init::core('Exception');
+Init::core('stdClass');
 Init::core('Debug');
 Init::core('Config');
 Init::core('DB');
 Init::core('DB\PostgreSQL');
 Init::core('URI');
 Init::core('HTTP');
+Init::core('Html');
 Init::core('Controller');
 Init::core('View');
 

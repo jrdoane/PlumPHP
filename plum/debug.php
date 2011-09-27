@@ -50,6 +50,7 @@
  * PlumPHP is hyjacking dBug. There is no license attached to this script so 
  * I will keep the header that came with it as reference. Should contact author 
  * to find out status of the license for this script.
+ * NOTE! License is GPL, which is fine because that is plum's licensing (soon.)
  */
 
 namespace Plum;
@@ -93,32 +94,6 @@ class Debug {
 
     //get variable name
     function getVariableName() {
-	$arrBacktrace = debug_backtrace();
-
-	//possible 'included' functions
-	$arrInclude = array("include","include_once","require","require_once");
-
-	//check for any included/required files. if found, get array of the last included file (they contain the right line numbers)
-	for($i=count($arrBacktrace)-1; $i>=0; $i--) {
-	    $arrCurrent = $arrBacktrace[$i];
-	    if(array_key_exists("function", $arrCurrent) && 
-		(in_array($arrCurrent["function"], $arrInclude) || (0 != strcasecmp($arrCurrent["class"], "Debug"))))
-		continue;
-
-	    $arrFile = $arrCurrent;
-
-	    break;
-	}
-
-	if(isset($arrFile)) {
-	    $arrLines = file($arrFile["file"]);
-	    $code = $arrLines[($arrFile["line"]-1)];
-
-	    //find call to dBug class
-	    preg_match('/\bDebug::out\s*\(\s*(.+)\s*\);/i', $code, $arrMatches);
-
-	    return $arrMatches[1];
-	}
 	return "";
     }
 
