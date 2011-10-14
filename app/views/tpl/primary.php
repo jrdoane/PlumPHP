@@ -1,10 +1,11 @@
-<?= Html:doctype('html5') ?>
+<?php namespace Plum; ?>
+<?= Html::doctype('html5') ?>
 <html>
 <head>
-    <title><?= isset($title) ? $title : "Manager"; ?></title>
+    <title><?= isset($title) ? $title : "Title"; ?></title>
     <meta http-equiv="content-type" 
 	  content="application/xhtml+xml; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="assets/css/stylesheet.css" 
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css" 
 	  media="screen, projection, tv " />
 </head>
 
@@ -13,7 +14,7 @@
     <div id="blogtitle">
 	<!-- Breadcrumbs -->
 	<div id="small">
-	    <?= isset($breadcrumbs) ? $breadcrumbs : 'Manager' ?>
+	    <?= isset($breadcrumbs) ? $breadcrumbs : 'Breadcrumbs go here.' ?>
 	</div>
 	<div id="small2">
 	    <?= isset($user_string) ? $user_string : 'You are not logged in.' ?>

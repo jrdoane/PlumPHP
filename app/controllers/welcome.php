@@ -9,7 +9,10 @@ class Welcome extends \Plum\Controller {
             )
         );
         $test = \Plum\Debug::out($x);
-        \Plum\View::load('welcome', array('test' => $test));
+        \Plum\View::load('tpl/small', array(
+            'test' => $test,
+            )
+        );
     }
 
     public function test_db() {
@@ -19,12 +22,10 @@ class Welcome extends \Plum\Controller {
             FROM test
         ";
         $result = \Plum\DB::exec_conn($sql);
-        print_r($result->get_all_obj());
         $build->tag('body', array(), '', true);
         foreach($result->get_all_obj() as $row) {
             $build->p(var_export($row, true));
         }
-        $build->step_out();
 
         print $build->get_string();
     }

@@ -1,7 +1,7 @@
 <?php
 namespace Plum;
 
-class URI {
+class Uri {
 
     /**
      * These variables are for caching. This is only stored once it is asked 
@@ -10,6 +10,10 @@ class URI {
     private static $_current_controller = '';
     private static $_current_method = '';
     private static $_current_params = '';
+
+    public static function base() {
+        return Config::get('wwwroot', 'web');
+    }
 
     public static function current_uri($full = false) {
         $root = Config::get('wwwroot', 'web');

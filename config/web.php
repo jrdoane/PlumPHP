@@ -2,7 +2,7 @@
 // Default core config file.
 // Just start assigning stuff to $config. It is an assoc array.
 
-$config['wwwroot'] = 'http://plum.peared.net/';
+$config['wwwroot'] = 'http://plum.peared.net:8080/';
 $config['wwwfile'] = 'index.php'; // (With a properly configured .htaccess file, this can be ''
 
 $config['default_controller'] = 'welcome'; // Controller to default to if uri string is empty.
