@@ -1,5 +1,5 @@
 <?php
-namespace plum;
+namespace Plum;
 
 /**
  * What a controller does. You always need to inherit this.
@@ -34,6 +34,10 @@ abstract class Controller {
      * path.
      */
     public static function factory($name) {
+        if(empty($name)) {
+            throw new MissingParameterException($name);
+        }
+        $name = strtolower($name);
         $cprefix = Config::get('controller_prefix', 'system');
         $csuffix = Config::get('controller_suffix', 'system');
         $appdirname = Config::get('application_dir', 'system');
@@ -42,11 +46,11 @@ abstract class Controller {
         $classname = "{$cprefix}{$name}{$csuffix}";
         $dir .= "/{$classname}.php";
         if(!file_exists($dir)) {
-            throw new Exception("Missing controller: {$classname}.");
+            throw new Exception("Missing controller file: {$dir}.");
         }
         include_once($dir);
         if(!class_exists($classname)) {
-            throw new Exception("Missing controller: {$classname}.");
+            throw new Exception("Missing controller class: {$classname}.");
         }
         return new $classname();
     }

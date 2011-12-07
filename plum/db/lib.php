@@ -27,19 +27,12 @@ abstract class Connection {
     abstract public function sql($sql);
 
     /**
-     * Basic SQL wrappers for basic sql commands.
+     * SQL wrappers for basic sql commands.
      */
     public abstract function insert($table, $data, $return=false);
     public abstract function delete($table, $where, $return=false);
-    public abstract function select($table, $where=array(), $limit=0, $offset=0);
+    public abstract function select($table, $where=array(), $limit=0, $offset=0, $sort='');
     public abstract function update($table, $data, $where, $return=false);
-}
-
-/**
- * Query class is used for building complex queries without writing SQL.
- * How far this will be developed is very up-in-the-air.
- */
-abstract class Query {
 }
 
 /**

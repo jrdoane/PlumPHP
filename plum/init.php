@@ -40,10 +40,13 @@ class Init {
 // We could wait and see if a page needs any of these modules before loading 
 // them, but how much overhead are we really adding? This way we don't need to 
 // check to see if anything is loaded (even though we store that anyways.)
+// Logger must load first.
+
 /**
  * These are PHP core class wrappers for the Plum namespace.
  */
 Init::core('Logger');
+Init::core('Constant'); // Plum defines.
 Init::core('Exception');
 Init::core('stdClass');
 

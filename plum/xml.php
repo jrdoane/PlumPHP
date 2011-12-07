@@ -41,6 +41,9 @@ class XmlBuilder {
             $step_in = false;
         }
         $tn = new XmlNode($name, $attr, $value);
+        if(!is_object($this->_ptr)) {
+            throw new Exception();
+        }
         $this->_ptr->add_node($tn);
         if($step_in) {
             $this->_dft++;

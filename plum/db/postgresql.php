@@ -3,6 +3,7 @@ namespace Plum\DB\PostgreSQL;
 use \Plum\DB\Connection as ConnectionShell;
 use \Plum\DB\Result as ResultShell;
 use \Plum\DB\Query as QueryShell;
+use \Plum\DB\Table as TableShell;
 
 class Connection extends ConnectionShell {
     public function connect(
@@ -49,18 +50,29 @@ class Connection extends ConnectionShell {
     }
 
     public function insert($table, $data, $return=false) {
+        $arrays_expected = false;
         $i = $this->table_identifier();
         $sql = "INSERT INTO {$i}$table{$i}\n";
         $cp = array();
         $sql .= '(' . implode(',', array_keys($data)) . ")\n";
+        $row = array();
         foreach($data as $field => $value) {
             // Process nested inserts. We're going to do some bulk!
-            if(is_array($value)) {
+            if(is_array($value) or $arrays_expected) {
+                if(!is_array($value)) {
+                    // Explode. We were getting arrays, what happened?
+                }
+                $arrays_expected = true;
+                $row = array();
                 foreach($value as $inner_field => $inner_value) {
                     $inner_value = $this->process_input($inner_value);
+                    $row[$inner_field] = $inner_value;
                 }
-            }
+                $cp[] = $row;
+            } else {
+
             $value = $this->process_input($value);
+            }
         }
     }
 
@@ -85,10 +97,53 @@ class Connection extends ConnectionShell {
 
     }
 
-    public function select($table, $where=array(), $limit=0, $offset=0) {
+    public function select($table, $where=array(), $limit=0, $offset=0, $sort='') {
+        $i = $this->table_identifier();
+        $sql = "
+            SELECT *
+            FROM {$i}{$table}{$i}
+        ";
+        $sql .= $this->build_where($where);
+        if(!empty($sort)) {
+            $sql .= "ORDER BY $sort\n";
+        }
+        if($limit != 0) {
+            $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        }
+        return $this->sql($sql);
     }
 
     public function update($table, $data, $where, $return=false) {
+        $i = $this->table_identifier();
+        $sql = "UPDATE {$i}$table{$i} SET ";
+        $tmpsql = '';
+        $data = $this->insert_values_recurse($data); //Cleans and makes multi-dim arrays 1-d arrays.
+        $set = array();
+        foreach($data as $field => $value) {
+            $set[] = "{$i}$field{$i} = $value";
+        }
+        $sql .= implode(', ', $set);
+        $sql .= $this->build_where($where);
+        return $this->sql($sql);
+    }
+
+    private function build_where($where = array()) {
+        $i = $this->table_identifier();
+        $sql = '';
+        $where_sql = array();
+        foreach($where as $field => $value) {
+            $tmpsql = "{$i}$field{$i} ";
+            if($value === null) {
+                $tmpsql .= 'IS NULL ';
+            } else {
+                $tmpsql .= $this->process_input($value);
+            }
+            $where_sql[] = $tmpsql;
+        }
+        if(!empty($where_sql)) {
+            $sql .= 'WHERE ' . implode(' AND ', $wheresql) . "\n";
+        }
+        return $sql;
     }
 
     private function insert_values_recurse($data) {
@@ -106,9 +161,6 @@ class Connection extends ConnectionShell {
 
         return $rd;
     }
-}
-
-class Query extends QueryShell {
 }
 
 class Result extends ResultShell {
@@ -143,7 +195,7 @@ class Result extends ResultShell {
      * @return bool
      */
     public function success() {
-        return $pg_result_error($this->_result) === false ? true : false;
+        return pg_result_error($this->_result) === false ? true : false;
     }
 
     public function count_rows_altered() {
@@ -203,4 +255,8 @@ class Result extends ResultShell {
         }
         return $objects;
     }
+}
+
+class Table {
+
 }

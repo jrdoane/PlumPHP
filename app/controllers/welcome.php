@@ -10,7 +10,9 @@ class Welcome extends \Plum\Controller {
         );
         $test = \Plum\Debug::out($x);
         \Plum\View::load('tpl/small', array(
-            'test' => $test,
+            'titlebar' => 'PlumPHP',
+            'center' => $test,
+            'breadcrumbs' => 'PlumPHP'
             )
         );
     }
@@ -35,6 +37,11 @@ class Welcome extends \Plum\Controller {
             print "SQL required.";
             return;
         }
-        print_r(\Plum\DB::exec_conn($sql));
+        $build = \Plum\Html::builder();
+        $result = \Plum\DB::exec_conn($sql);
+        foreach($result->get_all_obj() as $row) {
+            $build->p(var_export($row, true));
+        }
+        print $build->get_string();
     }
 }
