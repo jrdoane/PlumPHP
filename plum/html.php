@@ -30,13 +30,15 @@ class Html extends Xml {
  */
 class HtmlBuilder extends XmlBuilder{
     public function __construct($name = 'html', $attr = array(), $value = '') {
-        $this->_top = new HtmlNode('html', $attr, $value);
-        $this->_ptr =& $this->_top;
-        $this->_dft = 0;
+        parent::__construct($name, $attr, $value);
     }
 
     public function p($val, $attr = array()) {
         $this->tag('p', $attr, $val);
+    }
+
+    public function pre($val, $attr = array()) {
+        $this->tag('pre', $attr, $val);
     }
 }
 

@@ -25,9 +25,7 @@ class Welcome extends \Plum\Controller {
         ";
         $result = \Plum\DB::exec_conn($sql);
         $build->tag('body', array(), '', true);
-        foreach($result->get_all_obj() as $row) {
-            $build->p(var_export($row, true));
-        }
+        $build->pre(var_export($result->get_all_obj(), true));
 
         print $build->get_string();
     }

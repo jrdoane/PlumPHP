@@ -25,7 +25,7 @@ class XmlBuilder {
     private $_dft; // Distance from the top.
 
     public function __construct($name, $attr = array(), $value = '') {
-        $this->_top = new HtmlNode('html', $attr, $value);
+        $this->_top = new XmlNode($name, $attr, $value);
         $this->_ptr =& $this->_top;
         $this->_dft = 0;
     }
@@ -42,7 +42,7 @@ class XmlBuilder {
         }
         $tn = new XmlNode($name, $attr, $value);
         if(!is_object($this->_ptr)) {
-            throw new Exception();
+            throw new Exception(var_export($this, true));
         }
         $this->_ptr->add_node($tn);
         if($step_in) {
@@ -53,6 +53,16 @@ class XmlBuilder {
             $new_object =& $tn;
         }
         return true;
+    }
+
+    /**
+     * Gets the distance from the top of the tree.
+     * Important for indenting xml output.
+     * 
+     * @return int
+     */
+    public function get_dft() {
+        return $this->_dft;
     }
 
     /**
@@ -84,26 +94,38 @@ class XmlBuilder {
         return true;
     }
 
-    public function get_string($node = null) {
-        if(get_class($node) != "Plum\\HtmlNode" AND $node !== null) {
+    public function get_string($node = null, $depth = 0) {
+        if(!XmlNode::is_node($node) and $node !== null) {
             throw new Exception("Invalid object.");
         }
-        if(strtolower(get_class($node)) == 'stdclass') {
-            throw new Exception("Invalid object.");
-        }
+
+        // What does this do? --jdoane
         if($node !== null) {
             $top =& $node;
         } else {
             $top =& $this->_top;
         }
+        // We want to make sure everything is XML/HTML friendly before we start 
+        // adding XML with it which would make this impossible any later.
+        $top->_value = htmlspecialchars($top->_value);
+
         if(!empty($top->_children)) {
-            $out = "\n";
+            $out = "\n" . $this->get_space_depth($depth);
             foreach($top->_children as $c) {
-                $out .= $this->get_string($c) . "\n";
+                $out .= $this->get_string($c, $depth + 1) . "\n";
+                $out .= $this->get_space_depth($depth - 1);
             }
             $top->_value .= $out;
         }
-        return Html::tag($top->get_name(), $top->get_attributes(), $top->get_value());
+        return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value());
+    }
+
+    private function get_space_depth($depth) {
+        $out = '';
+        for($i = 0; $i <= $depth; $i++) {
+            $out .= '  '; // Add 2 spaces for every node we go in.
+        }
+        return $out;
     }
 }
 
@@ -131,7 +153,7 @@ class XmlNode {
 
     public function add_node(&$node) {
         if(!self::is_node($node)) {
-            throw new HtmlNodeExpectedException($node);
+            throw new XmlNodeExpectedException($node);
         }
         $node->set_parent($this);
         $this->_children[] =& $node;
@@ -142,9 +164,16 @@ class XmlNode {
     public function get_value() { return $this->_value; }
 
     public static function is_node($node) {
-        if(get_class($node) != 'Plum\HtmlNode') {
+        if(empty($node)) {
             return false;
         }
-        return true;
+        $classes = array(
+            'Plum\HtmlNode',
+            'Plum\XmlNode'
+        );
+        if(in_array(get_class($node), $classes)) {
+            return true;
+        }
+        return false;
     }
 }
