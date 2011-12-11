@@ -1,56 +1,25 @@
 <?php
-/*********************************************************************************************************************\
- * LAST UPDATE
- * ============
- * March 22, 2007
- *
- *
- * AUTHOR
- * =============
- * Kwaku Otchere 
- * ospinto@hotmail.com
- * 
- * Thanks to Andrew Hewitt (rudebwoy@hotmail.com) for the idea and suggestion
- * 
- * All the credit goes to ColdFusion's brilliant cfdump tag
- * Hope the next version of PHP can implement this or have something similar
- * I love PHP, but var_dump BLOWS!!!
- *
- * FOR DOCUMENTATION AND MORE EXAMPLES: VISIT http://dbug.ospinto.com
- *
- *
- * PURPOSE
- * =============
- * Dumps/Displays the contents of a variable in a colored tabular format
- * Based on the idea, javascript and css code of Macromedia's ColdFusion cfdump tag
- * A much better presentation of a variable's contents than PHP's var_dump and print_r functions
- *
- *
- * USAGE
- * =============
- * new dBug ( variable [,forceType] );
- * example:
- * new dBug ( $myVariable );
- *
- * 
- * if the optional "forceType" string is given, the variable supplied to the 
- * function is forced to have that forceType type. 
- * example: new dBug( $myVariable , "array" );
- * will force $myVariable to be treated and dumped as an array type, 
- * even though it might originally have been a string type, etc.
- *
- * NOTE!
- * ==============
- * forceType is REQUIRED for dumping an xml string or xml file
- * new dBug ( $strXml, "xml" );
- * 
-\*********************************************************************************************************************/
-
 /**
- * PlumPHP is hyjacking dBug. There is no license attached to this script so 
- * I will keep the header that came with it as reference. Should contact author 
- * to find out status of the license for this script.
- * NOTE! License is GPL, which is fine because that is plum's licensing (soon.)
+ * Core PlumPHP Library - debug (dBug Integrated library)
+ *
+ * PlumPHP and dBug are free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PlumPHP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Code credit for dBug goes to Kwaku Otchere <ospinto@hotmail.com>
+ * dbug source code can be found here: http://dbug.ospinto.com
+ *
+ * PlumPHP and dBug are cooperating nicely in GPL land. Please enjoy this added 
+ * functionality made possible by the GPL v3 license.
  */
 
 namespace Plum;

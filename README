@@ -27,7 +27,8 @@ along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
 ============
 
 /public - WWW root, this is where you point your http server.
-/plum - Core plum code, you shouldn't have to touch this in normal circumstances.
+/plum - Core plum code, you shouldn't have to touch this under normal circumstances.
 /config - All static config files go here.
 /app - All of your application files go here.
-    - Plum uses a MVC model, the file structure reflects this.
+    Plum uses an MVC architecture-like. System config settings determines what
+    directory controllers and views go into, but they have to be in the app directory.
