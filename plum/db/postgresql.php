@@ -1,4 +1,20 @@
 <?php
+/**
+ * Core PlumPHP Libary - PostgreSQL database library.
+ *
+ * PlumPHP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * PlumPHP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
+ */
 namespace Plum\DB\PostgreSQL;
 use \Plum\DB\Connection as ConnectionShell;
 use \Plum\DB\Result as ResultShell;
@@ -19,6 +35,9 @@ class Connection extends ConnectionShell {
      * Run some sql and take a crazy guess at what the output should be.
      * If we're not told what the type of query this is, we will process the 
      * output accordingly.
+     *
+     * @param string    $sql is a sql query.
+     * @return \Plum\DB\Result
      */
     public function sql($sql) {
         $result = pg_query($this->_connection, $sql);

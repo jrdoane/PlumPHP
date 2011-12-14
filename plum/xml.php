@@ -46,7 +46,13 @@ class XmlBuilder {
         $this->_dft = 0;
     }
 
-    public function tag($name, $attr = array(), $value = '', $step_in = false, $return = true) {
+    /**
+     * Creates an XML tag.
+     * Returns reference of itself, allows method chaining.
+     *
+     * WARNING! Unpredictable behavior when using return while chaining.
+     */
+    public function &tag($name, $attr = array(), $value = '', $step_in = false) {
         if(empty($attr)) {
             $attr = array();
         }
@@ -65,10 +71,7 @@ class XmlBuilder {
             $this->_dft++;
             $this->_ptr =& $tn;
         }
-        if($return == true) {
-            $new_object =& $tn;
-        }
-        return true;
+        return $this;
     }
 
     /**
@@ -126,10 +129,10 @@ class XmlBuilder {
         $top->_value = htmlspecialchars($top->_value);
 
         if(!empty($top->_children)) {
-            $out = "\n" . $this->get_space_depth($depth);
+            $out = "\n";
             foreach($top->_children as $c) {
-                $out .= $this->get_string($c, $depth + 1) . "\n";
-                $out .= $this->get_space_depth($depth - 1);
+                $out .= $this->get_space_depth($depth);
+                $out .= $this->get_string($c, $depth + 1);
             }
             $top->_value .= $out;
         }

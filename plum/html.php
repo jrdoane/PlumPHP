@@ -49,14 +49,27 @@ class HtmlBuilder extends XmlBuilder{
         parent::__construct($name, $attr, $value);
     }
 
-    public function p($val, $attr = array()) {
-        $this->tag('p', $attr, $val);
+    public function &p($val, $attr = array()) {
+        return $this->tag('p', $attr, $val);
     }
 
-    public function pre($val, $attr = array()) {
-        $this->tag('pre', $attr, $val);
+    public function &pre($val, $attr = array()) {
+        return $this->tag('pre', $attr, $val);
+    }
+
+    public function &form($attr) {
+        return $this->tag('form', $attr, '', true);
+    }
+
+    public function &fieldset($attr=array()) {
+        return $this->tag('fieldset', $attr, '', true);
+    }
+
+    public function &input($attr) {
+        return $this->tag('input', $attr);
     }
 }
 
 // Add any Html tag specific things here.
 class HtmlNode extends XmlNode { }
+

@@ -105,4 +105,19 @@ class Uri {
     public static function get_parameters() {
         return self::$_current_params;
     }
+
+    /**
+     * Create usable uri for the web.
+     *
+     * @param string    $querystring is everything after the wwwroot.
+     * @return string
+     */
+    public static function href($querystring='') {
+        if(!empty($querystring)) {
+            if(!strpos($querystring, '/') === 0) {
+                $querystring = '/' . $querystring;
+            }
+        }
+        return self::base() . $querystring;
+    }
 }
