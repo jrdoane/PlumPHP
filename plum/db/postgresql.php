@@ -63,7 +63,7 @@ class Connection extends ConnectionShell {
 
     public function process_input($var) {
         if (is_numeric($var)) {
-            return $var;
+            return "{$var}";
         }
         return "'".pg_escape_string($var)."'";
     }
@@ -73,26 +73,41 @@ class Connection extends ConnectionShell {
         $i = $this->table_identifier();
         $sql = "INSERT INTO {$i}$table{$i}\n";
         $cp = array();
-        $sql .= '(' . implode(',', array_keys($data)) . ")\n";
         $row = array();
-        foreach($data as $field => $value) {
-            // Process nested inserts. We're going to do some bulk!
-            if(is_array($value) or $arrays_expected) {
-                if(!is_array($value)) {
-                    // Explode. We were getting arrays, what happened?
-                }
-                $arrays_expected = true;
-                $row = array();
-                foreach($value as $inner_field => $inner_value) {
-                    $inner_value = $this->process_input($inner_value);
-                    $row[$inner_field] = $inner_value;
-                }
-                $cp[] = $row;
-            } else {
+        $insert_info= $this->build_values($data);
+        $sql .= '(' . implode(', ', $insert_info->fields) . ")\nVALUES\n";
+        $sql .= implode(",\n", $insert_info->data);
 
-            $value = $this->process_input($value);
+        return $this->sql($sql);
+    }
+
+    private function build_values($array, $obj=null) {
+        $string = '';
+        if(!is_array($array)) {
+            throw new Exception();
+        }
+
+        $row = array();
+        $fields = array();
+        foreach($array as $key => $value) {
+            if(is_array($value)) {
+                $obj = $this->build_values($value, $obj);
+            } else {
+                $fields[] = $key;
+                $row[$key] = $this->process_input($value);
             }
         }
+
+        if(empty($obj)) {
+            $obj = new \Plum\stdClass;
+            $obj->data = array();
+            $obj->fields = $fields;
+        }
+        if(!empty($row)) {
+            $obj->data[] = '(' . implode(', ', $row) . ')';
+        }
+
+        return $obj;
     }
 
     public function delete($table, $where=array(), $return=false) {

@@ -35,7 +35,6 @@ class Html extends Xml {
         }
     }
 
-
     public static function builder($name = 'html', $attr = array(), $value = '') {
         return new HtmlBuilder($name, $attr, $value);
     } 
@@ -49,9 +48,29 @@ class HtmlBuilder extends XmlBuilder{
         parent::__construct($name, $attr, $value);
     }
 
+    public function &head() {
+        return $this->tag('head', array(), '', true);
+    }
+
+    public function &body() {
+        return $this->tag('body', array(), '', true);
+    }
+
+    public function &h($level, $text, $attr = array()) {
+        if(!is_numeric($level)) {
+            throw new Exception();
+        }
+        return $this->tag("h{$level}", $attr, $text);
+    }
+
     public function &p($val, $attr = array()) {
         return $this->tag('p', $attr, $val);
     }
+
+    public function &br() {
+        return $this->tag('br');
+    }
+
 
     public function &pre($val, $attr = array()) {
         return $this->tag('pre', $attr, $val);
@@ -61,12 +80,33 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('form', $attr, '', true);
     }
 
-    public function &fieldset($attr=array()) {
+    public function &fieldset($attr = array()) {
         return $this->tag('fieldset', $attr, '', true);
     }
 
-    public function &input($attr) {
+    public function &input($name, $type, $attr = array()) {
+        if(!is_array($attr)) {
+            throw new InvalidParameterTypeException($attr);
+        }
+        $attr['name'] = $name;
+        $attr['type'] = $type;
         return $this->tag('input', $attr);
+    }
+
+    public function &table($attr = array()) {
+        return $this->tag('table', $attr, '', true);
+    }
+
+    public function &tr($attr = array()) {
+        return $this->tag('tr', $attr, '', true);
+    }
+
+    public function &th($text, $attr = array()) {
+        return $this->tag('th', $attr, $text);
+    }
+
+    public function &td($text, $attr = array()) {
+        return $this->tag('td', $attr, $text);
     }
 }
 

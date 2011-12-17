@@ -118,6 +118,8 @@ class Uri {
                 $querystring = '/' . $querystring;
             }
         }
-        return self::base() . $querystring;
+        $url = self::base() . $querystring;
+
+        return $url;
     }
 }

@@ -28,6 +28,7 @@ class ParameterException extends \Plum\Exception {
     }
 }
 class MissingParameterException extends \Plum\ParameterException {}
+class InvalidParameterTypeException extends \Plum\ParameterException {}
 
 // Parameter sub-exceptions.
 class ArrayExceptedException extends \Plum\ParameterException {}

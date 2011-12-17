@@ -15,23 +15,30 @@ class HTTP {
         header('HTTP/1.0 404 Not Found', false, 404);
     }
 
-    public static function input($name, $type=PARAM_TEXT, $from=FROM_REQUEST) {
+    public static function input($name, $type=\Plum\PARAM_TEXT, $from=\Plum\FROM_REQUEST) {
         $locations = array();
         if(empty($from)) {
-            $from = FROM_REQUEST;
+            $from = \Plum\FROM_REQUEST;
         }
+
         switch($from) {
-        case FROM_REQUEST:
-            if(!empty($_REQUEST[$name])) {
-                return self::clean($_REQUEST[$name], $type);
-            }
-        case FROM_POST:
-            if(!empty($_POST[$name])) {
-                return self::clean($_REQUEST[$name], $type);
-            }
+        case \Plum\FROM_REQUEST:
+            $input = !empty($_REQUEST[$name]) ? $_REQUEST[$name] : '';
+            break;
+        case \Plum\FROM_POST:
+            $input = !empty($_POST[$name]) ? $_POST[$name] : '';
+            break;
+        case \Plum\FROM_FILE:
+            $input = !empty($_FILES[$name]) ? $_FILES[$name] : '';
+            break;
         default:
-            throw new UnknownParamTypeException();
+            throw new UnknownParamTypeException($from);
         }
+
+        if(!empty($input)) {
+            return self::clean($input, $type);
+        }
+        return false;
     }
 
     public static function clean($data, $param) {

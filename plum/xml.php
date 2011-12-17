@@ -26,24 +26,25 @@ class Xml {
             }
         }
         if(empty($value)) {
-            $out .= " />\n";
+            $out .= " />";
             return $out;
         }
         $out .= ">{$value}</$name>";
         return $out;
     }
-
 }
 
 class XmlBuilder {
     private $_top; // the trunk of the tree.
     private $_ptr; // pointer within the tree.
     private $_dft; // Distance from the top.
+    private $_tagcounts;
 
     public function __construct($name, $attr = array(), $value = '') {
         $this->_top = new XmlNode($name, $attr, $value);
         $this->_ptr =& $this->_top;
         $this->_dft = 0;
+        $this->_tagcounts = array($name => 1); // For stepped in elements only.
     }
 
     /**
@@ -70,6 +71,12 @@ class XmlBuilder {
         if($step_in) {
             $this->_dft++;
             $this->_ptr =& $tn;
+
+            if(empty($this->_tagcounts[$name])) {
+                $this->_tagcounts[$name] = 1;
+            } else {
+                $this->_tagcounts[$name]++;
+            }
         }
         return $this;
     }
@@ -89,13 +96,15 @@ class XmlBuilder {
      * and is an integer it will attempt to go up that many levels. If $to is 
      * a string it will attempt to go up to the first occurance of that tag.
      *
+     * This returns a reference to the builder object, like tag.
+     *
      * Example: $this->step_out(2) goes up 2 levels.
      * Example: $this->step_out('html') goes up to the top level html tag.
      *
      * @param mixed     $to tells the function how far to step out.
-     * @return bool
+     * @return object
      */
-    public function step_out($to = null) {
+    public function step_out($to = 1) {
         if(empty($this->_ptr->_parent) or $this->_dft === 0) {
             throw new Exception("No parent to step out to.");
         }
@@ -103,14 +112,37 @@ class XmlBuilder {
         if(!empty($to)) {
             // TODO: write this. :)
             if(is_numeric($to) and is_int($to)) {
+                if($to > $this->_dft) {
+                    throw new Exception("Attempt to step out by {$to}, only have {$this->_dft}.");
+                }
+                for($n = 1; $n <= $to; $n++) {
+                    if(empty($this->_ptr->_parent)) {
+                        throw new Exception('Objected expected, got ' . get_class($this->_ptr->parent));
+                    }
+                    $this->_ptr =& $this->_ptr->_parent;
+                    $this->_dft--;
+                }
             } elseif (is_string($to)) {
+                if(empty($this->_tagcounts[$to])) {
+                    throw new Exception("Unable to go back to '{$to}', never stepped into that tag.");
+                }
+
+                // We're going to go back until we hit the tag we want.
+                do {
+                    if($this->_ptr->_name == $to) {
+                        break;
+                    }
+                    if(!is_object($this->_ptr->_parent)) {
+                        throw new Exception('Object expected, got ' . get_class($this->_ptr->parent));
+                    }
+                    $this->_ptr =& $this->_ptr->_parent;
+                    $this->_dft--;
+                } while ($this->_ptr->_name != $to);
             } else {
                 throw new ParameterException("Expected int or string and got neither.");
             }
         }
-        $this->_ptr =& $this->_ptr->_parent;
-        $this->_dft--;
-        return true;
+        return $this;
     }
 
     public function get_string($node = null, $depth = 0) {
@@ -134,9 +166,9 @@ class XmlBuilder {
                 $out .= $this->get_space_depth($depth);
                 $out .= $this->get_string($c, $depth + 1);
             }
-            $top->_value .= $out;
+            $top->_value .= $out . $this->get_space_depth($depth - 1);
         }
-        return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value());
+        return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
     }
 
     private function get_space_depth($depth) {
