@@ -32,28 +32,4 @@ class Welcome extends \Plum\Controller {
             )
         );
     }
-
-    public function test_db() {
-        $build = \Plum\Html::builder();
-        $database = \Plum\DB::get_conn(); // Gets default connection
-        $result = $database->select('test');
-
-        $build->tag('body', array(), '', true);
-        $build->pre(var_export($result->get_all_obj(), true));
-
-        print $build->get_string();
-    }
-
-    public function sql($sql) {
-        if(empty($sql)) {
-            print "SQL required.";
-            return;
-        }
-        $build = \Plum\Html::builder();
-        $result = \Plum\DB::exec_conn($sql);
-        foreach($result->get_all_obj() as $row) {
-            $build->p(var_export($row, true));
-        }
-        print $build->get_string();
-    }
 }

@@ -65,11 +65,16 @@ class Testing extends \Plum\Controller {
 
             $fields = array_shift($csv);
 
+            $ignored_items = 0;
+            $insert_count = 0;
             $insert_data = array();
+            $db = \Plum\DB::get_conn();
             foreach($csv as $row) {
                 if(count($row) < 7) {
                     continue;
                 }
+
+
                 $tmp = array(
                     'date' => strtotime($row[0]),
                     'amount' => preg_replace('/,/', '', $row[1]),
@@ -80,13 +85,25 @@ class Testing extends \Plum\Controller {
                     'description' => $row[6],
                     'account_name' => $title
                 );
+                $md5str = '';
+                foreach($tmp as $item) {
+                    $md5str .= $item;
+                }
+                $tmp['checksum'] = md5($md5str);
+                $result = $db->select('bank_transactions', array('checksum' => $tmp['checksum']));
+                if($result->has_next()) {
+                    $ignored_items++;
+                    continue;
+                }
                 $insert_data[] = $tmp;
+                $insert_count++;
             }
 
-            $db = \Plum\DB::get_conn();
+            $insert_count  = count($insert_count);
+
             $rval = $db->insert('bank_transactions', $insert_data);
-            print_r($rval);
             $html->h(3, "Successfully uploaded CSV data to the database.");
+            $html->p("Uploaded {$insert_count} records, ignored {$ignored_items} that already existed.");
         }
 
         $attr = array(

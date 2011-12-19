@@ -46,7 +46,7 @@ class Connection extends ConnectionShell {
             if(!$error) {
                 return false;
             }
-            throw new \Plum\Exception("PostgreSQL Query Error: {$error}");
+            throw new \Plum\Exception("PostgreSQL Query Error: {$error}\nSQL:{$sql}");
         }
         // Results are when data is returned and only when data is returned.
         // We want a bool "True" otherwise.
@@ -69,6 +69,9 @@ class Connection extends ConnectionShell {
     }
 
     public function insert($table, $data, $return=false) {
+        if(empty($data)) {
+            return true;
+        }
         $arrays_expected = false;
         $i = $this->table_identifier();
         $sql = "INSERT INTO {$i}$table{$i}\n";
@@ -170,12 +173,12 @@ class Connection extends ConnectionShell {
             if($value === null) {
                 $tmpsql .= 'IS NULL ';
             } else {
-                $tmpsql .= $this->process_input($value);
+                $tmpsql .= ' = ' . $this->process_input($value);
             }
             $where_sql[] = $tmpsql;
         }
         if(!empty($where_sql)) {
-            $sql .= 'WHERE ' . implode(' AND ', $wheresql) . "\n";
+            $sql .= 'WHERE ' . implode(' AND ', $where_sql) . "\n";
         }
         return $sql;
     }
