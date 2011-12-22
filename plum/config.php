@@ -76,4 +76,8 @@ class Config {
     public static function plum_root() {
         return dirname(dirname(__FILE__)) . '/plum';
     }
+
+    public static function ext_root() {
+        return dirname(dirname(__FILE__)) . '/ext';
+    }
 }

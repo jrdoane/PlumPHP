@@ -27,8 +27,14 @@ class ParameterException extends \Plum\Exception {
         parent::__construct(var_export($param, true));
     }
 }
+
+class ExtensionException extends \Plum\Exception {}
+
 class MissingParameterException extends \Plum\ParameterException {}
 class InvalidParameterTypeException extends \Plum\ParameterException {}
+class MissingExtensionException extends \Plum\ExtensionException {}
+
+class NotImplementedException extends \Plum\Exception {}
 
 // Parameter sub-exceptions.
 class ArrayExceptedException extends \Plum\ParameterException {}

@@ -99,8 +99,6 @@ class Testing extends \Plum\Controller {
                 $insert_count++;
             }
 
-            $insert_count  = count($insert_count);
-
             $rval = $db->insert('bank_transactions', $insert_data);
             $html->h(3, "Successfully uploaded CSV data to the database.");
             $html->p("Uploaded {$insert_count} records, ignored {$ignored_items} that already existed.");
@@ -109,7 +107,7 @@ class Testing extends \Plum\Controller {
         $attr = array(
             'name' => 'csvform',
             'enctype' => 'multipart/form-data',
-            'action' => \Plum\Uri::href('/testing/csv'),
+            'action' => \Plum\Uri::href('testing/csv'),
             'method' => 'POST'
         );
 

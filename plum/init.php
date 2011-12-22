@@ -21,24 +21,48 @@ namespace Plum;
 class Init {
     static protected $modules_loaded;
 
+    /**
+     * Loads a core module.
+     *
+     * @param string    $module is the name of the component being loaded.
+     * @return null
+     */
     public static function core($module) {
         if(empty(self::$classes_loaded)) {
             self::$modules_loaded = array();
         }
         $dir = dirname(__FILE__);
-        $lower = strtolower($module);
+        self::load($module, $dir);
+    }
+
+    /**
+     * Loads an installed PlumPHP extension.
+     *
+     * @param string    $ext is the name of the extension.
+     * @return null
+     */
+    public static function extension($ext) {
+        if(empty(self::$classes_loaded)) {
+            self::$modules_loaded = array();
+        }
+        $dir = dirname(dirname(__FILE__)) . '/ext';
+        self::load($ext, $dir);
+    }
+
+    public static function load($name, $directory) {
+        $lower = strtolower($name);
         $lower = str_replace("\\", "/", $lower); // Handle deeper namespaces as directories.
-        // Example: \Plum\DB\Connection is going to be in /wwwroot/plum/db/db.php
-        // Init will be: Init::core('DB\Connection');
-        $path = "{$dir}/{$lower}.php";
+        // Example: \Plum\DB\Connection would translate to /plumroot/plum/db/db.php
+        // Init would be: Init::core('DB\Connection');
+        $path = "{$directory}/{$lower}.php";
         require_once($path);
-        if(class_exists("\\Plum\\{$module}")) {
-            if(method_exists("\\Plum\\$module", 'init')) {
-                $fqn = "\\Plum\\$module";
+        if(class_exists("\\Plum\\{$name}")) {
+            if(method_exists("\\Plum\\$name", 'init')) {
+                $fqn = "\\Plum\\$name";
                 $fqn::init();
             }
         }
-        self::$modules_loaded[$module] = $path;
+        self::$modules_loaded[$name] = $path;
     }
 
     public static function app() {
@@ -59,7 +83,8 @@ class Init {
 // Logger must load first.
 
 /**
- * These are PHP core class wrappers for the Plum namespace.
+ * These are PHP core class wrappers for the Plum namespace and libraries that 
+ * need to be loaded first.
  */
 Init::core('Logger');
 Init::core('Constant'); // Plum defines.
@@ -91,5 +116,15 @@ Init::core('Xml');
 Init::core('Html'); // Extends XML, must come aftet.
 Init::core('Controller');
 Init::core('View');
+
+/**
+ * Core components are done. Between now and the time the application code 
+ * starts running we will want to initalize any added extensions to plum.
+ */
+$extensions = Config::get('extensions', 'system');
+foreach($extensions as $ext) {
+    Init::extension($ext);
+}
+
 
 Init::app();
