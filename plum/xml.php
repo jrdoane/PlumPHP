@@ -49,11 +49,18 @@ class XmlBuilder {
 
     /**
      * Creates an XML tag.
-     * Returns reference of itself, allows method chaining.
+     * Returns reference of itself ($this), allows method chaining.
      *
-     * WARNING! Unpredictable behavior when using return while chaining.
+     * Value isn't altered in any way shape or form. This method is good if the 
+     * XML builder is going to be taking in values with xml already in it.
+     *
+     * @param string    $name is the name of the tag.
+     * @param array     $attr is an array of attributes for the element.
+     * @param string    $value is the string to put between the opening and closing tags.
+     * @param bool      $step_in determines if the tree pointer should go instead of this new node.
+     * @return object
      */
-    public function &tag($name, $attr = array(), $value = '', $step_in = false) {
+    public function &raw($name, $attr = array(), $value = '', $step_in = false) {
         if(empty($attr)) {
             $attr = array();
         }
@@ -79,6 +86,27 @@ class XmlBuilder {
             }
         }
         return $this;
+    }
+
+    /**
+     * Creates an XML tag.
+     * Returns reference of itself ($this), allows method chaining.
+     *
+     * tag runs htmlspecialchars on the input. If you don't want this use the 
+     * `raw` method instead.
+     *
+     * @param string    $name is the name of the tag.
+     * @param array     $attr is an array of attributes for the element.
+     * @param string    $value is the string to put between the opening and closing tags.
+     * @param bool      $step_in determines if the tree pointer should go instead of this new node.
+     * @return object
+     */
+    public function &tag($name, $attr = array(), $value = '', $step_in = false) {
+        if(empty($value)) {
+            $value = '';
+        }
+        $value = htmlspecialchars($value);
+        return $this->raw($name, $attr, $value, $step_in);
     }
 
     /**

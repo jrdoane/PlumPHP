@@ -126,5 +126,5 @@ foreach($extensions as $ext) {
     Init::extension($ext);
 }
 
-
 Init::app();
+
