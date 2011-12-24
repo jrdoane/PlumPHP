@@ -67,6 +67,10 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('p', $attr, $val);
     }
 
+    public function &div($attr = array()) {
+        return $this->tag('div', $attr, '', true);
+    }
+
     public function &br() {
         return $this->tag('br');
     }

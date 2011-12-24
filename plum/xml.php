@@ -104,7 +104,7 @@ class XmlBuilder {
      * @param mixed     $to tells the function how far to step out.
      * @return object
      */
-    public function step_out($to = 1) {
+    public function &step_out($to = 1) {
         if(empty($this->_ptr->_parent) or $this->_dft === 0) {
             throw new Exception("No parent to step out to.");
         }
