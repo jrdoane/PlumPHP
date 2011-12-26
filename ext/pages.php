@@ -19,6 +19,9 @@ namespace Plum;
 
 class Pages {
     public static function print_header() {
+        $header = array('id' => 'page_header');
+        $html = new \Plum\HTMLBuilder('div', $header);
+
     }
 
     public static function print_footer() {
