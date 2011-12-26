@@ -48,6 +48,19 @@ class XmlBuilder {
     }
 
     /**
+     * Returns a reference of the currently active XML node.
+     *
+     * @return object
+     */
+    public function &get_current_node() {
+        return $this->_ptr;
+    }
+
+    public function &get_current_children() {
+        return $this->_ptr->get
+    }
+
+    /**
      * Creates an XML tag.
      * Returns reference of itself, allows method chaining.
      *
@@ -171,6 +184,13 @@ class XmlBuilder {
         return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
     }
 
+    /**
+     * Returns the proper amount of white-space for the depth of the tree.
+     * WARNING: Do not check the result of this with empty().
+     *
+     * @param int       $depth is how deep in the tree we are.
+     * @return string
+     */
     private function get_space_depth($depth) {
         $out = '';
         for($i = 0; $i <= $depth; $i++) {
@@ -180,6 +200,9 @@ class XmlBuilder {
     }
 }
 
+/**
+ * OOP representation of an XML node. This is used by the XMLBuilder.
+ */
 class XmlNode {
     public $_name;
     public $_attributes;
@@ -195,6 +218,14 @@ class XmlNode {
         $this->_parent = false;
     }
 
+    /**
+     * Sets the parent node of this node.
+     * WARNING: Settings a parent that is a child will cause recursion and 
+     * chaotic behavior.
+     * 
+     * @param object    &$node is an XML node to set as a parent. (by reference.)
+     * @return null
+     */
     public function set_parent(&$node) {
         if(is_subclass_of($node, 'Plum\XmlNode') or $node === false) {
             throw new HtmlNodeExpectedException($node);
@@ -202,6 +233,12 @@ class XmlNode {
         $this->_parent =& $node;
     }
 
+    /**
+     * Adds a child node to the current node.
+     *
+     * @param object    $node is an XML node.
+     * @return null
+     */
     public function add_node(&$node) {
         if(!self::is_node($node)) {
             throw new XmlNodeExpectedException($node);
@@ -210,10 +247,44 @@ class XmlNode {
         $this->_children[] =& $node;
     }
 
+    /**
+     * Returns the tag name.
+     *
+     * @return string
+     */
     public function get_name() { return $this->_name; }
+
+    /**
+    * Gets an array of attributs for a node. Returns an empty array if no 
+    * attributes.
+    *
+    * @return array
+     */
     public function get_attributes() { return $this->_attributes; }
+
+    /**
+     * Gets the contents of the current HTML flag (excluding explicit HTML 
+     * children.)
+     *
+     * @return string
+     */
     public function get_value() { return $this->_value; }
 
+    /**
+     * Gets the children of the current node.
+     *
+     * @return array
+     */
+    public function &get_children() { return $this->_children; }
+
+    /**
+     * Is this an XML node?
+     * TODO: Overhaul this function to check and see if the class extends 
+     * XMLNode.
+     *
+     * @param object    $node is ab object to see if it is a XMLNode.
+     * @return bool
+     */
     public static function is_node($node) {
         if(empty($node)) {
             return false;
