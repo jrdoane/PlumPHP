@@ -5,7 +5,9 @@ if(empty($page)) {
     throw new \Plum\Exception('No page object passed to page view.');
 }
 $html = new \Plum\HtmlBuilder();
-$html->head();
+
+// TODO: Re-add this when we actually need it.
+//$html->head();
 
 // If anything needs to go in the HTML head, do it now.
 

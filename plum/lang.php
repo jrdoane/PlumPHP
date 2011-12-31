@@ -1,6 +1,6 @@
 <?php
 /**
- * PlumPHP Welcome Controller
+ * Core PlumPHP Libary - Initialization
  *
  * PlumPHP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
-class Login extends \Plum\Controller {
-    public function index() {
-        /**
-         * Generate the page and handle.
-         */
-        $html = \Plum\HtmlBuilder('div', array('class' => 'loginform'));
-        $html->form(
-            array(
-                'action' => \Plum\Uri::href('login'),
-                'method' => 'POST'
-            )
-        );
-        $html->label(
+namespace Plum;
 
-        /**
-         * Output the page
-         */
-        $page = new stdClass;
-        \Plum\View::load('page', array('page' => $page));
+/**
+ * Language class, will enable string translations.
+ */
+
+class Lang {
+    public static function get($string, $module='') {
+        $search_dirs = Config::get('dirs', 'lang');
+        foreach($search_dirs as $dir) {
+
+        }
+    }
+
+    public static function plum($string) {
+
     }
 }

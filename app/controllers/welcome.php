@@ -17,6 +17,7 @@
  */
 class Welcome extends \Plum\Controller {
     public function index() {
-        \Plum\View::load('page');
+        $page = new stdClass;
+        \Plum\View::load('page', array('page' => $page));
     }
 }

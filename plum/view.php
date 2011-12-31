@@ -36,10 +36,15 @@ class View {
     }
 
     private static function _process($_file, $_vars = array()) {
-        foreach($_vars as $_key => $_v) {
-            $$_key = $_v;
-        }
-        include($_file);
+        // These globals don't live long.
+        global $PAGE, $FILE;
+        $PAGE = $_vars;
+        $FILE = $_file;
+
+        // This file resides in the global namespace so we can put these 
+        // variables in that scope. It's an added step but that is what we get 
+        // for using namespaces.
+        include(dirname(__FILE__) . '/page.php');
         return true;
     }
 }

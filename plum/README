@@ -1,0 +1,3 @@
+All core plum libraries go in this directory and various sub-directories. For
+any web application, the hope is that an upgrade to plum should only involve
+updating /plum/* (with the exception of API changes.)

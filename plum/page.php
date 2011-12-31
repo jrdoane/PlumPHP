@@ -1,6 +1,6 @@
 <?php
 /**
- * Core PlumPHP Libary - Initialization
+ * Core PlumPHP library - Core exceptions
  *
  * PlumPHP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,15 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace Plum;
 
-class Pages {
-    public static function print_header() {
-        $header = array('id' => 'page_header');
-        $html = new \Plum\HTMLBuilder('div', $header);
-
-    }
-
-    public static function print_footer() {
+// This must live in the global namespace without classes to work.
+global $PAGE, $FILE;
+if(!empty($PAGE)) {
+    foreach($PAGE as $name => $var) {
+        $$name = $var;
     }
 }
+$__viewfile = $FILE;
+unset($GLOBALS['PAGE']);
+unset($GLOBALS['FILE']);
+
+include($__viewfile);

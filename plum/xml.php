@@ -57,7 +57,7 @@ class XmlBuilder {
     }
 
     public function &get_current_children() {
-        return $this->_ptr->get
+        return $this->_ptr->get_children();
     }
 
     /**

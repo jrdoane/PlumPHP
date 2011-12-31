@@ -1,0 +1,12 @@
+TODO: Complete this README.
+
+Language files go here. (app/lang/[langcode]/module.php)
+
+Inside these files, just start assigning strings to the $string array.
+
+Example:
+$string['helloworld'] = 'Hello World';
+$string['loginfailed'] = 'Login failed';
+$string['etc'] = 'etc.';
+
+en_utf8 will be the default.

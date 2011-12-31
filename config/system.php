@@ -29,5 +29,4 @@ $config['debug'] = true;
  * Add non-core modules here.
  */
 $config['extensions'] = array (
-    'Pages'
 );

@@ -56,6 +56,26 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('body', array(), '', true);
     }
 
+    /**
+     * Anchor (chain)method. Builds an anchor for you.
+     *
+     * @param string    $text is what is inside the a tag.
+     * @url mixed       $url is either a string, which will be the href 
+     *                  attribute, or will take an array of attributes.
+     * @return object
+     */
+    public function &a($text, $url='') {
+        if(empty($url)) {
+            $url = array();
+        }
+
+        if(is_string($url)) {
+            $url = array ('href' => $url);
+        }
+
+        return $this->tag('a', $url, $text);
+    }
+
     public function &h($level, $text, $attr = array()) {
         if(!is_numeric($level)) {
             throw new Exception();
@@ -88,6 +108,13 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('fieldset', $attr, '', true);
     }
 
+    public function &label($text, $for = '', $attr = array()) {
+        if(!empty($for)) {
+            $attr['for'] = $for;
+        }
+        return $this->tag('label', $attr, $text);
+    }
+
     public function &input($name, $type, $attr = array()) {
         if(!is_array($attr)) {
             throw new InvalidParameterTypeException($attr);
@@ -111,6 +138,29 @@ class HtmlBuilder extends XmlBuilder{
 
     public function &td($text, $attr = array()) {
         return $this->tag('td', $attr, $text);
+    }
+
+    public function &ol($attr = array()) {
+        return $this->tag('ol', $attr, '', true);
+    }
+
+    public function &ul($attr = array()) {
+        return $this->tag('ul', $attr, '', true);
+    }
+
+    /**
+     * li() is a little different than the average html method. If text is exactly false 
+     * (which is the default,) the HTMLBuilder pointer will be moved into the 
+     * tag. If text is a string, it will make the tag without stepping into it.
+     *
+     * @param mixed     $text has been explained above.
+     * @return object
+     */
+    public function &li($text=false, $attr = array()) {
+        if($text === false) {
+            return $this->tag('li', $attr, '', true);
+        }
+        return $this->tag('li', $attr, $text);
     }
 }
 
