@@ -1,6 +1,6 @@
 <?php
 /**
- * PlumPHP Welcome Controller
+ * Portal Style Controller.
  *
  * PlumPHP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
-class Welcome extends \Plum\Controller {
+class Style extends \Plum\Controller {
     public function index() {
-        $page = new stdClass;
-        $page->breadcrumbs = array (
-            array (
-                'text' => 'Test Crumb 1',
-                'url' => \Plum\Uri::href()
-            ),
-            array (
-                'text' => 'Test Crumb 2',
-                'url' => \Plum\Uri::href()
-            ),
-        );
-        \Plum\View::load('page', array('page' => $page));
+        \Plum\View::load('style');
     }
 }

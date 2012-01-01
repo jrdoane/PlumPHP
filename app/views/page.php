@@ -7,11 +7,9 @@ if(empty($page)) {
 $html = new \Plum\HtmlBuilder();
 
 // TODO: Re-add this when we actually need it.
-//$html->head();
-
-// If anything needs to go in the HTML head, do it now.
-
-// End HTML Head.
+$html->head();
+$html->title();
+$html->link_style('style');
 $html->step_out('html');
 
 // Enter the html body and create a new drive using the header attributes.
@@ -27,14 +25,34 @@ $div_footer = array(
     'id' => 'tpl_footer'
 );
 
-if(!empty($page->header)) {
-    $html->body()->div($div_header);
+$html->body()->div($div_header);
 
-    // Put header contents here.
+// Put header contents here.
+$bread_list = array (
+    'id' => 'breadcrumbs'
+);
+$html->h(3, \Plum\Config::get('site_name', 'web'));
+$html->ul($bread_list);
 
-    // End header contents
-    $html->step_out('body');
+// Lets say where we are and provide it as a link for starters.
+$html->li(false, array('class' => 'breadcrumb', 'id' => 'firstbreadcrumb'))
+    ->a(\Plum\Config::get('site_name_short', 'web'), \Plum\Uri::href())
+    ->step_out('ul');
+
+if(!empty($page->breadcrumbs)) {
+    foreach($page->breadcrumbs as $crumb) {
+        if(is_array($crumb)) {
+            $crumb = (object)$crumb;
+        }
+        $html->li(false, array('class' => 'breadcrumb'))
+            ->span('>')
+            ->a($crumb->text, $crumb->url)
+            ->step_out('ul');
+    }
 }
+
+// End header contents
+$html->step_out('body');
 
 if(!empty($page->body)) {
     $html->div($div_body);

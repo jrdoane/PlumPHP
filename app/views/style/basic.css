@@ -1,0 +1,29 @@
+h3 {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    padding-bottom 1px;
+}
+div#tpl_header {
+    width: 100%;
+    min-width: 640px;
+}
+
+ul#breadcrumbs {
+    margin 2px;
+    padding 1px;
+    display: block;
+
+    border: 1px solid black;
+    background-color: rgb(149, 206, 145);
+}
+
+li.breadcrumb {
+    display: inline;
+    width: auto;
+    margin: 1px;
+    padding: 1px;
+}
+
+li#firstbreadcrumb {
+    list-style-type: circle;
+}

@@ -52,6 +52,26 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('head', array(), '', true);
     }
 
+    /**
+     * Simple title wrapper for the title tag. It takes a string or no string, 
+     * and will do some string magic if you would like the site name in the 
+     * title which defaults to enabled.
+     *
+     * @param string    $string is some text that will become the title.
+     * @param bool      $prepend if true (default) will add the site name.
+     */
+    public function &title($string = '', $prepend = true) {
+        if($prepend) {
+            $site = Config::get('site_name_short', 'web');
+            if(empty($string)) {
+                $string = $site;
+            } else {
+                $string = $site . ': ' . $string;
+            }
+        }
+        return $this->tag('title', array(), $string);
+    }
+
     public function &body() {
         return $this->tag('body', array(), '', true);
     }
@@ -95,6 +115,9 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('br');
     }
 
+    public function &span($text, $attr = array()) {
+        return $this->tag('span', $attr, $text);
+    }
 
     public function &pre($val, $attr = array()) {
         return $this->tag('pre', $attr, $val);
@@ -162,6 +185,21 @@ class HtmlBuilder extends XmlBuilder{
         }
         return $this->tag('li', $attr, $text);
     }
+
+    public function &link($attr) {
+        return $this->tag('link', $attr);
+    }
+
+    public function &link_style($url) {
+        $attr = array(
+            'href' => Uri::href($url),
+            'rel' => 'stylesheet',
+            'type' => 'text/css',
+            'media' => 'screen'
+        );
+        return $this->link($attr);
+    }
+
 }
 
 // Add any Html tag specific things here.

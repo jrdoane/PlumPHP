@@ -23,3 +23,7 @@ $config['wwwfile'] = 'index.php'; // (With a properly configured .htaccess file,
 
 $config['default_controller'] = 'welcome'; // Controller to default to if uri string is empty.
 $config['default_method'] = 'index'; // This is the default method that gets call if the uri string doesn't have a method.
+
+$config['site_name'] = 'PlumPortal 1.0';
+$config['site_name_short'] = 'PlumPortal';
+

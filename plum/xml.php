@@ -39,12 +39,14 @@ class XmlBuilder {
     private $_ptr; // pointer within the tree.
     private $_dft; // Distance from the top.
     private $_tagcounts;
+    private $_specialchars;
 
     public function __construct($name, $attr = array(), $value = '') {
         $this->_top = new XmlNode($name, $attr, $value);
         $this->_ptr =& $this->_top;
         $this->_dft = 0;
         $this->_tagcounts = array($name => 1); // For stepped in elements only.
+        $this->_specialchars = true;
     }
 
     /**
@@ -118,7 +120,9 @@ class XmlBuilder {
         if(empty($value)) {
             $value = '';
         }
-        $value = htmlspecialchars($value);
+        if($this->_specialchars) {
+            $value = htmlspecialchars($value);
+        }
         return $this->raw($name, $attr, $value, $step_in);
     }
 
@@ -186,6 +190,15 @@ class XmlBuilder {
         return $this;
     }
 
+    public function &specialchars($enabled) {
+        if($enabled) {
+            $this->_specialchars = true;
+        } else {
+            $this->_specialchars = false;
+        }
+        return $this;
+    }
+
     public function get_string($node = null, $depth = 0) {
         if(!XmlNode::is_node($node) and $node !== null) {
             throw new Exception("Invalid object.");
@@ -197,9 +210,6 @@ class XmlBuilder {
         } else {
             $top =& $this->_top;
         }
-        // We want to make sure everything is XML/HTML friendly before we start 
-        // adding XML with it which would make this impossible any later.
-        $top->_value = htmlspecialchars($top->_value);
 
         if(!empty($top->_children)) {
             $out = "\n";

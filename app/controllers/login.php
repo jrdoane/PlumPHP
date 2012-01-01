@@ -27,7 +27,6 @@ class Login extends \Plum\Controller {
                 'method' => 'POST'
             )
         );
-        $html->label(
 
         /**
          * Output the page
