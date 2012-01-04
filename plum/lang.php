@@ -22,14 +22,47 @@ namespace Plum;
  */
 
 class Lang {
-    public static function get($string, $module='') {
-        $search_dirs = Config::get('dirs', 'lang');
-        foreach($search_dirs as $dir) {
+    protected static $_strings;
 
+    public static function init() {
+        self::load(Config::get('plum_dir', 'lang'));
+        foreach(Config::get('app_dirs', 'lang') as $ld) {
+            self::load($ld);
         }
     }
 
-    public static function plum($string) {
+    public static function load($path) {
+        $files = scandir($path);
+        foreach($files as $f) {
+            if($f == '.' or $f == '..' or !preg_match('/.php$/', $f)) {
+                continue;
+            }
+            
+            preg_match("/(^.*).php$/", $f, $match);
+            if(empty(self::$_strings[$match[1]])) {
+                self::$_strings[$match[1]] = array();
+            }
+            $string = array();
+            include($path . "/{$f}");
+            self::$_strings[$match[1]] = array_merge(self::$_strings[$match[1]], $string);;
+        }
+    }
 
+    public static function get($string, $module='') {
+        if(empty($module)) {
+            $module = Config::get('default_file', 'lang');
+        }
+        // Did we already load the file?
+        if(empty(self::$_strings[$module])) {
+            // TODO: Write to logger that a missing language module was 
+            // accessed.
+            return "[[$string]]";
+        }
+
+        if(empty(self::$_strings[$module][$string])) {
+            return "[[$string]]";
+        }
+
+        return self::$_strings[$module][$string];
     }
 }

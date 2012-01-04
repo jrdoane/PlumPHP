@@ -17,21 +17,41 @@
  */
 class Login extends \Plum\Controller {
     public function index() {
+        $username = \Plum\HTTP::input('username');
+        $password = \Plum\HTTP::input('password');
+
+        if(!empty($username) and !empty($password)) {
+            print_r($username);
+            print_r($password);
+            die();
+        }
         /**
          * Generate the page and handle.
          */
-        $html = \Plum\HtmlBuilder('div', array('class' => 'loginform'));
-        $html->form(
+        $html = new \Plum\HtmlBuilder();
+        $html->div(array('class' => 'loginform'))
+            ->form(
             array(
                 'action' => \Plum\Uri::href('login'),
                 'method' => 'POST'
             )
         );
 
+        $html->h(2, \Plum\Lang::get('login'))
+            ->label(\Plum\Lang::get('username'), 'username')
+            ->input('text', 'username')
+            ->br()
+            ->label(\Plum\Lang::get('password'), 'password')
+            ->input('password', 'password')
+            ->br()
+            ->input('submit', array('value' => \Plum\Lang::get('login')))
+            ->step_out('div');
+
         /**
          * Output the page
          */
         $page = new stdClass;
+        $page->body = $html;
         \Plum\View::load('page', array('page' => $page));
     }
 }

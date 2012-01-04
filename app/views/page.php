@@ -56,10 +56,13 @@ $html->step_out('body');
 
 if(!empty($page->body)) {
     $html->div($div_body);
-
+    if(is_object($page->body)) {
+        $html->merge_builders($page->body);
+    }
     $html->step_out('body');
 }
 
+$html->hr();
 if(!empty($page->footer)) {
     $html->div($div_footer);
 

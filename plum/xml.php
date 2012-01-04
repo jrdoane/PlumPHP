@@ -62,6 +62,25 @@ class XmlBuilder {
         return $this->_ptr->get_children();
     }
 
+    public function &get_top() {
+        return $this->_top;
+    }
+
+    public function merge_builders(&$builder) {
+        $btop = $builder->get_top();
+        $this->add_children($btop->_children);
+    }
+
+    public function add_child(&$child) {
+        $this->_ptr->add_node($child);
+    }
+
+    public function add_children(&$children) {
+        foreach($children as &$child) {
+            self::add_child($child);
+        }
+    }
+
     /**
      * Creates an XML tag.
      * Returns reference of itself ($this), allows method chaining.

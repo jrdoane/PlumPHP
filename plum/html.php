@@ -115,6 +115,10 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('br');
     }
 
+    public function &hr() {
+        return $this->tag('hr');
+    }
+
     public function &span($text, $attr = array()) {
         return $this->tag('span', $attr, $text);
     }
@@ -138,11 +142,20 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('label', $attr, $text);
     }
 
-    public function &input($name, $type, $attr = array()) {
+    /**
+     * New and improved input function.
+     *
+     * @param string    $type is an html form type string.
+     * @param mixed     $attr can be a name or an array of attributes.
+     * @return object
+     */
+    public function &input($type, $attr = array()) {
+        if(is_string($attr)) {
+            $attr = array('name' => $attr);
+        }
         if(!is_array($attr)) {
             throw new InvalidParameterTypeException($attr);
         }
-        $attr['name'] = $name;
         $attr['type'] = $type;
         return $this->tag('input', $attr);
     }

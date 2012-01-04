@@ -1,6 +1,6 @@
 <?php
 /**
- * PlumPHP system configuration settings
+ * Authentication Library - PlumPHP Extension
  *
  * PlumPHP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,17 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
+namespace Plum;
 
-$plumdir = dirname(dirname(__FILE__));
+/**
+ * Authentication class using plum-level controls.
+ */
+class Session {
+    public static function init() {
+        session_start();
+        $_SESSION['sessid'] = session_id();
 
-// What language should we default to?
-$config['lang'] = 'en_utf8';
-$config['default_file'] = 'default';
-
-// Where are our language search directories?
-$config['app_dirs'] = array (
-    "$plumdir/app/lang"
-);
-
-$config['plum_dir'] = "$plumdir/plum/lang";
-
+        // From here on we need to check to see if we:
+        // A: are connected to a database, the default is used for sessions.
+        // B: has a session table to use (we haven't implemented DDL in the db layer.)
+        // C: Has an existing session id record, if no create one and use the db.
+    }
+}

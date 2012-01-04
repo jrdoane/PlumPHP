@@ -38,3 +38,29 @@ a {
 a:visited {
     color: #5B80B0;
 }
+
+div.loginform {
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 4px;
+    border: 1px solid #51945E;
+    background-color: white;
+    text-align: center;
+}
+
+label {
+    display: inline-block;
+    width: 160px;
+    margin: auto;
+    text-align: left;
+}
+
+hr {
+    margin-top: 20px;
+    margin-bottom: 5px;
+    color: #51945E;
+    background-color: #51945E;
+    height: 1px;
+    border: 0;
+}

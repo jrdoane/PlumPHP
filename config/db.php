@@ -28,7 +28,7 @@ $config['servers'] = array(
         'username' => 'test',
         'password' => 'lkj123',
         'database' => 'plumphp_test',
-        'prefix' => '',
+        'prefix' => 'portal_',
         'persistant' => true,
         'default' => true
     )

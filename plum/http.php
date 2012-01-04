@@ -15,6 +15,11 @@ class HTTP {
         header('HTTP/1.0 404 Not Found', false, 404);
     }
 
+    public static function redirect($url) {
+        header("Location: {$url}");
+        exit();
+    }
+
     public static function input($name, $type=\Plum\PARAM_TEXT, $from=\Plum\FROM_REQUEST) {
         $locations = array();
         if(empty($from)) {
@@ -31,6 +36,8 @@ class HTTP {
         case \Plum\FROM_FILE:
             $input = !empty($_FILES[$name]) ? $_FILES[$name] : '';
             break;
+        case \Plum\FROM_COOKIE:
+            $input = !empty($_COOKIE[$name] ? $_COOKIE[$name] : '';
         default:
             throw new UnknownParamTypeException($from);
         }

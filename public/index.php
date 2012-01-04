@@ -18,7 +18,7 @@
 
 // Plum index file that all requests hit.
 require_once(dirname(dirname(__FILE__)) . "/plum/init.php");
-$cname = \Plum\URI::get_controller();
+$cname = \Plum\Uri::get_controller();
 try {
     $controller = \Plum\Controller::factory($cname);
 } catch (Exception $ex) {
