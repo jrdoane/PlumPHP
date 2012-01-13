@@ -20,11 +20,16 @@ class Login extends \Plum\Controller {
         $username = \Plum\HTTP::input('username');
         $password = \Plum\HTTP::input('password');
 
-        if(!empty($username) and !empty($password)) {
-            print_r($username);
-            print_r($password);
-            die();
+        if(\Plum\Auth::is_logged_in()) {
+            \Plum\HTTP::redirect(\Plum\Uri::href(''));
         }
+
+        if(!empty($username) and !empty($password)) {
+            if(\Plum\Auth::login($username, $password)) {
+                \Plum\HTTP::redirect(\Plum\Uri::href(''));
+            }
+        }
+
         /**
          * Generate the page and handle.
          */
@@ -39,7 +44,7 @@ class Login extends \Plum\Controller {
 
         $html->h(2, \Plum\Lang::get('login'))
             ->label(\Plum\Lang::get('username'), 'username')
-            ->input('text', 'username')
+            ->input('text', array('name' => 'username', 'value' => $username))
             ->br()
             ->label(\Plum\Lang::get('password'), 'password')
             ->input('password', 'password')
@@ -51,7 +56,19 @@ class Login extends \Plum\Controller {
          * Output the page
          */
         $page = new stdClass;
+        $page->breadcrumbs = array (
+            (object)array(
+                'text' => \Plum\Lang::get('login')
+            )
+        );
         $page->body = $html;
         \Plum\View::load('page', array('page' => $page));
     }
+
+    public static function logout() {
+        \Plum\Auth::logout();
+        \Plum\Session::reset();
+        \Plum\HTTP::redirect(\Plum\Uri::href('login'));
+    }
 }
+

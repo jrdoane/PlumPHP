@@ -27,6 +27,15 @@ class Auth {
     public static function init() {
         self::$_user = null;
         self::$_impersonate = null;
+
+        if($user = Session::get('user')) {
+            self::$_user = $user;
+        }
+    }
+
+    public static function logout() {
+        self::$_user = null;
+        self::$_impersonate = null;
     }
 
     public static function login($username, $password) {
@@ -45,6 +54,7 @@ class Auth {
                     // Password is incorrect.
                     return false;
                 }
+                break;
             default:
                 // No auth defined, which means no login.
                 return false;
@@ -53,6 +63,7 @@ class Auth {
         $user->last_login = time();
         $db->update('user', array('last_login' => time()), array('user_id' => $user->user_id));
         self::$_user = $user;
+        return true;
     }
 
     public static function impersonate($user) {
@@ -71,5 +82,9 @@ class Auth {
 
     public static function is_logged_in() {
         return self::$_user != null;
+    }
+
+    public static function shutdown() {
+        Session::set('user', self::$_user);
     }
 }

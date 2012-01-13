@@ -48,3 +48,6 @@ if(!method_exists($controller, $method)) {
 $controller->before();
 call_user_func_array(array($controller, $method), \Plum\URI::get_parameters());
 $controller->after();
+
+\Plum\Init::system_shutdown();
+

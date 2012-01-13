@@ -31,7 +31,23 @@ $html->body()->div($div_header);
 $bread_list = array (
     'id' => 'breadcrumbs'
 );
-$html->h(3, \Plum\Config::get('site_name', 'web'));
+$html->h(3, \Plum\Config::get('site_name', 'web'), array('id' => 'pagetitle'));
+
+// Check to see if a user is logged in.
+
+// This should take two forms. Not logged in, and logged in.
+if(\Plum\Auth::is_logged_in()) {
+    $user = \Plum\Auth::get_current_user();
+    $loginstr = \Plum\Lang::get('youareloggedinas') . " {$user->username}";
+    $loginstr .= ' ' . \Plum\Xml::tag('a', 
+        array('href' => \Plum\Uri::href('login/logout')),
+        \Plum\Lang::get('logout')
+    );
+} else {
+    $loginstr = \Plum\Lang::get('youarenotloggedin');
+}
+$html->p($loginstr, array('id' => 'loginstring'))
+    ->a(\Plum\Lang::get('logout'), \Plum\Uri::href('login/logout'));
 $html->ul($bread_list);
 
 // Lets say where we are and provide it as a link for starters.
@@ -44,10 +60,19 @@ if(!empty($page->breadcrumbs)) {
         if(is_array($crumb)) {
             $crumb = (object)$crumb;
         }
+        if(is_string($crumb)) {
+            $crumb = (object)array(
+                'text' => $crumb
+            );
+        }
         $html->li(false, array('class' => 'breadcrumb'))
-            ->span('>')
-            ->a($crumb->text, $crumb->url)
-            ->step_out('ul');
+            ->span('>');
+        if(!empty($crumb->url)) {
+            $html->a($crumb->text, $crumb->url);
+        } else {
+            $html->span($crumb->text);
+        }
+        $html->step_out('ul');
     }
 }
 

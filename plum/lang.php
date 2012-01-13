@@ -25,8 +25,12 @@ class Lang {
     protected static $_strings;
 
     public static function init() {
-        self::load(Config::get('plum_dir', 'lang'));
+        $plumdir = Config::get('plum_dir', 'lang');
+        $lang = Config::get('lang', 'lang');
+        $plumdir .= "/{$lang}";
+        self::load($plumdir);
         foreach(Config::get('app_dirs', 'lang') as $ld) {
+            $ld .= "/{$lang}";
             self::load($ld);
         }
     }

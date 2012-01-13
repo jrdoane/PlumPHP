@@ -16,6 +16,11 @@ class HTTP {
     }
 
     public static function redirect($url) {
+        // This is special. Since there might be components in plum that need to 
+        // shutdown properly, we're going to call init to shut things down. This 
+        // is particularly important if we want to save the state of the session 
+        // in the database.
+        Init::system_shutdown();
         header("Location: {$url}");
         exit();
     }
@@ -37,7 +42,8 @@ class HTTP {
             $input = !empty($_FILES[$name]) ? $_FILES[$name] : '';
             break;
         case \Plum\FROM_COOKIE:
-            $input = !empty($_COOKIE[$name] ? $_COOKIE[$name] : '';
+            $input = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : '';
+            break;
         default:
             throw new UnknownParamTypeException($from);
         }

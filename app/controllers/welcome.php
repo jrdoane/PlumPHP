@@ -16,6 +16,12 @@
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
 class Welcome extends \Plum\Controller {
+    public function before() {
+        if(!\Plum\Auth::is_logged_in()) {
+            \Plum\Http::redirect(\Plum\Uri::href('login'));
+        }
+    }
+
     public function index() {
         $page = new stdClass;
         $page->breadcrumbs = array (

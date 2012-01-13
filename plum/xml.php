@@ -139,7 +139,7 @@ class XmlBuilder {
         if(empty($value)) {
             $value = '';
         }
-        if($this->_specialchars) {
+        if($this->_specialchars and !empty($value)) {
             $value = htmlspecialchars($value);
         }
         return $this->raw($name, $attr, $value, $step_in);

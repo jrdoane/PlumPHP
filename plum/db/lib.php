@@ -14,7 +14,8 @@ abstract class Connection {
             $server['database'],
             $server['server'],
             $server['port'],
-            $server['persistant']
+            $server['persistant'],
+            $server['prefix']
         );
     }
 

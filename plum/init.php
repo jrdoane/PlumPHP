@@ -19,7 +19,10 @@ namespace Plum;
 
 // Little helper class.
 class Init {
-    static protected $modules_loaded;
+    static protected $classes_loaded;
+
+    static protected $_app_run_time;
+    static protected $_load_times;
 
     /**
      * Loads a core module.
@@ -29,7 +32,7 @@ class Init {
      */
     public static function core($module) {
         if(empty(self::$classes_loaded)) {
-            self::$modules_loaded = array();
+            self::$classes_loaded = array();
         }
         $dir = dirname(__FILE__);
         self::load($module, $dir);
@@ -43,13 +46,14 @@ class Init {
      */
     public static function extension($ext) {
         if(empty(self::$classes_loaded)) {
-            self::$modules_loaded = array();
+            self::$classes_loaded = array();
         }
         $dir = dirname(dirname(__FILE__)) . '/ext';
         self::load($ext, $dir);
     }
 
     public static function load($name, $directory) {
+        $time_initial = microtime(true);
         $lower = strtolower($name);
         $lower = str_replace("\\", "/", $lower); // Handle deeper namespaces as directories.
         // Example: \Plum\DB\Connection would translate to /plumroot/plum/db/db.php
@@ -62,16 +66,38 @@ class Init {
                 $fqn::init();
             }
         }
-        self::$modules_loaded[$name] = $path;
+        array_push(self::$classes_loaded, $name);
+        $time_final = microtime(true);
+        self::$_load_times[$name] = $time_final - $time_initial;
     }
 
     public static function app() {
+        $ti = microtime(true);
         $app = Config::get('application_dir', 'system');
         $dirroot = dirname(dirname(__FILE__));
         $approot = "{$dirroot}/{$app}";
         $appinit = "{$approot}/{$app}/init.php";
         if(file_exists($appinit)) {
             include("{$approot}/init.php");
+        }
+        self::$_load_times['app'] = microtime(true) - $ti;
+    }
+
+    /**
+     * Goes in reverse through the loaded classes and runs their shutdown method 
+     * if it exists. This is very important for classes such as the session 
+     * class that needs to write data to the database after everything is done. 
+     * This also happens every time so it needs to happen, always...
+     */
+    public static function system_shutdown() {
+        while($mod = array_pop(self::$classes_loaded)) {
+            $fqn = "\\Plum\\{$mod}";
+            if(!class_exists($fqn)) {
+                continue;
+            }
+            if(method_exists($fqn, 'shutdown')) {
+                $fqn::shutdown();
+            }
         }
     }
 }
@@ -90,7 +116,6 @@ Init::core('Logger');
 Init::core('Constant'); // Plum defines.
 Init::core('Exception');
 Init::core('stdClass');
-
 /**
  * Lets begin to load the guts of Plum.
  */
@@ -99,7 +124,6 @@ Init::core('Config');
 Init::core('Lang');
 Init::core('DB');
 Init::core('DB\PostgreSQL');
-
 /**
  * Stuff really starts happening here. Before this point we're just getting 
  * ready but once the database connection is initialized the logger will start 
@@ -113,6 +137,7 @@ Init::core('DB\PostgreSQL');
  */
 Init::core('Uri');
 Init::core('HTTP');
+Init::core('Session');
 Init::core('Xml');
 Init::core('Html'); // Extends XML, must come aftet.
 Init::core('Controller');

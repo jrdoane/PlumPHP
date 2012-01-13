@@ -20,15 +20,18 @@ use \Plum\DB\Connection as ConnectionShell;
 use \Plum\DB\Result as ResultShell;
 use \Plum\DB\Query as QueryShell;
 use \Plum\DB\Table as TableShell;
+use \Plum\Exception as Exception;
 
 class Connection extends ConnectionShell {
+    private $_prefix;
     public function connect(
         $user, $password, $database, $server = 'localhost',
-        $port = 5432, $persistant = false
+        $port = 5432, $persistant = false, $prefix = ''
     ) {
         $connection_string = "dbname={$database} port={$port} host={$server} ";
         $connection_string .= "user={$user} password={$password}";
         $this->_connection = pg_connect($connection_string);
+        $this->_prefix = $prefix;
     }
 
     /**
@@ -68,16 +71,20 @@ class Connection extends ConnectionShell {
         return "'".pg_escape_string($var)."'";
     }
 
+    private function prep_table_name($table) {
+        $i = $this->table_identifier();
+        return $i.$this->_prefix.$table.$i;
+    }
+
     public function insert($table, $data, $return=false) {
+        $table = $this->prep_table_name($table);
         if(empty($data)) {
             return true;
         }
-        $arrays_expected = false;
-        $i = $this->table_identifier();
-        $sql = "INSERT INTO {$i}$table{$i}\n";
+        $sql = "INSERT INTO $table\n";
         $cp = array();
         $row = array();
-        $insert_info= $this->build_values($data);
+        $insert_info = $this->build_values($data);
         $sql .= '(' . implode(', ', $insert_info->fields) . ")\nVALUES\n";
         $sql .= implode(",\n", $insert_info->data);
 
@@ -86,14 +93,14 @@ class Connection extends ConnectionShell {
 
     private function build_values($array, $obj=null) {
         $string = '';
-        if(!is_array($array)) {
+        if(!is_array($array) and !is_object($array)) {
             throw new Exception();
         }
 
         $row = array();
         $fields = array();
         foreach($array as $key => $value) {
-            if(is_array($value)) {
+            if(is_array($value) or is_object($value)) {
                 $obj = $this->build_values($value, $obj);
             } else {
                 $fields[] = $key;
@@ -114,8 +121,9 @@ class Connection extends ConnectionShell {
     }
 
     public function delete($table, $where=array(), $return=false) {
+        $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
-        $sql = "DELETE FROM {$i}$table{$i}\n";
+        $sql = "DELETE FROM $table\n";
         if(!empty($where)) {
             if(!is_array($where)) {
                 throw new \Plum\ArrayExpectedException($where);
@@ -123,6 +131,7 @@ class Connection extends ConnectionShell {
             $sql .= "WHERE ";
             $where_array = array();
             foreach($where as $field => &$value) {
+                $value = $this->process_input($value);
                 $where_array[] = "{$i}$field{$i} = $value";
             }
             $sql .= implode(' AND ', $where_array);
@@ -135,10 +144,10 @@ class Connection extends ConnectionShell {
     }
 
     public function select($table, $where=array(), $limit=0, $offset=0, $sort='') {
-        $i = $this->table_identifier();
+        $table = $this->prep_table_name($table);
         $sql = "
             SELECT *
-            FROM {$i}{$table}{$i}
+            FROM {$table}
         ";
         $sql .= $this->build_where($where);
         if(!empty($sort)) {
@@ -151,16 +160,19 @@ class Connection extends ConnectionShell {
     }
 
     public function update($table, $data, $where, $return=false) {
+        $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
-        $sql = "UPDATE {$i}$table{$i} SET ";
+        $sql = "UPDATE $table SET ";
         $tmpsql = '';
-        $data = $this->insert_values_recurse($data); //Cleans and makes multi-dim arrays 1-d arrays.
+
         $set = array();
         foreach($data as $field => $value) {
+            $value = $this->process_input($value);
             $set[] = "{$i}$field{$i} = $value";
         }
         $sql .= implode(', ', $set);
-        $sql .= $this->build_where($where);
+        $sql .= ' ' . $this->build_where($where);
+
         return $this->sql($sql);
     }
 
@@ -181,22 +193,6 @@ class Connection extends ConnectionShell {
             $sql .= 'WHERE ' . implode(' AND ', $where_sql) . "\n";
         }
         return $sql;
-    }
-
-    private function insert_values_recurse($data) {
-        $rd = array();
-        foreach($data as $field => &$value) {
-            $td = array();
-            if(is_array($value)) {
-                $rd = array_merge($rd, $this->insert_values_recurse($value));
-            }
-            $td[$field] = $this->process_input($value);
-        }
-        if(!empty($td)) {
-            $rd[] = $td;
-        }
-
-        return $rd;
     }
 }
 
