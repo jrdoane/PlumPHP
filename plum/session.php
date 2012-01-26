@@ -43,8 +43,7 @@ class Session {
 
         if(self::$_use_database == true) {
             // Grab data from the database.
-            $result = $conn->select('session', array('sessid' => session_id()), 1);
-            if($session = $result->get_next(true)) {
+            if($session = $conn->select('session', array('sessid' => session_id()), 1)) {
                 self::$_session = json_decode($session->data, true);
                 if(!empty(self::$_session['obj_names'])) {
                     foreach(self::$_session as $sin => &$si) {

@@ -40,11 +40,11 @@ class Auth {
 
     public static function login($username, $password) {
         $db = DB::get_conn();
-        $result = $db->select('user', array('username' => $username), 1);
-        if(!$user = $result->get_next(true)) {
+        if(!$user = $db->select('user', array('username' => $username), 1)) {
             // User does not exist.
             return false;
         }
+
 
         switch($user->auth) {
             case 'md5':
@@ -86,5 +86,53 @@ class Auth {
 
     public static function shutdown() {
         Session::set('user', self::$_user);
+    }
+    
+    public static function is_privileged($privilege, $user=null) {
+        if($user === null) {
+            if(!self::is_logged_in()) {
+                return false;
+            }
+            $user = self::$_user->user_id;
+        }
+        if(is_object($user) & !empty($user->user_id)) {
+            $user = $user->user_id;
+        }
+
+        if(!is_numeric($user)) {
+            throw new InvalidParameterTypeException($user);
+        }
+
+        if(!is_string($privilege)) {
+            throw new InvalidParameterTypeException($privilege);
+        }
+
+        $db = DB::get_conn();
+        $prefix = $db->get_prefix();
+        $sql = "
+            SELECT r.*, p.*
+            FROM {$prefix}user AS u
+            JOIN {$prefix}user_role AS ur USING (user_id)
+            JOIN {$prefix}role AS r USING (role_id)
+            LEFT JOIN {$prefix}role_privilege AS rp USING (role_id)
+            LEFT JOIN {$prefix}privilege AS p USING (privilege_id)
+            WHERE u.user_id = {$user} AND
+            (r.super_user = 1 OR p.name = '{$privilege}')
+            ";
+        $result = $db->sql($sql, true);
+        if($result->has_next()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function grant_role($role_id, $user_id) {
+        $db = DB::get_conn();
+        $db->insert('user_role', array('role_id' => $role_id, 'user_id' => $user_id));
+    }
+
+    public static function revoke_role($role_id, $user_id) {
+        $db = $DB::get_conn();
+        $db->delete('user_role', array('role_id' => $role_id, 'user_id' => $user_id));
     }
 }

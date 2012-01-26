@@ -34,6 +34,8 @@ class Connection extends ConnectionShell {
         $this->_prefix = $prefix;
     }
 
+    public function get_prefix() { return $this->_prefix; }
+
     /**
      * Run some sql and take a crazy guess at what the output should be.
      * If we're not told what the type of query this is, we will process the 
@@ -42,7 +44,7 @@ class Connection extends ConnectionShell {
      * @param string    $sql is a sql query.
      * @return \Plum\DB\Result
      */
-    public function sql($sql) {
+    public function sql($sql, $rs=false) {
         $result = pg_query($this->_connection, $sql);
         if($result == false) {
             $error = pg_last_error();
@@ -57,7 +59,11 @@ class Connection extends ConnectionShell {
         if($status === 1) {
             return true;
         }
-        return new Result($result);
+        $result = new Result($result);
+        if(!$rs) {
+            return $result->simplify_result();
+        }
+        return $result;
     }
 
     public function table_identifier() {
@@ -76,7 +82,7 @@ class Connection extends ConnectionShell {
         return $i.$this->_prefix.$table.$i;
     }
 
-    public function insert($table, $data, $return=false) {
+    public function insert($table, $data, $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
         if(empty($data)) {
             return true;
@@ -88,7 +94,7 @@ class Connection extends ConnectionShell {
         $sql .= '(' . implode(', ', $insert_info->fields) . ")\nVALUES\n";
         $sql .= implode(",\n", $insert_info->data);
 
-        return $this->sql($sql);
+        return $this->sql($sql, $rs);
     }
 
     private function build_values($array, $obj=null) {
@@ -120,7 +126,7 @@ class Connection extends ConnectionShell {
         return $obj;
     }
 
-    public function delete($table, $where=array(), $return=false) {
+    public function delete($table, $where=array(), $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
         $sql = "DELETE FROM $table\n";
@@ -139,11 +145,11 @@ class Connection extends ConnectionShell {
         if($return) {
             $sql .= "\nRETURNING *";
         }
-        return $this->sql($sql);
+        return $this->sql($sql, $rs);
 
     }
 
-    public function select($table, $where=array(), $limit=0, $offset=0, $sort='') {
+    public function select($table, $where=array(), $limit=0, $offset=0, $sort='', $rs=false) {
         $table = $this->prep_table_name($table);
         $sql = "
             SELECT *
@@ -156,10 +162,18 @@ class Connection extends ConnectionShell {
         if($limit != 0) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";
         }
-        return $this->sql($sql);
+
+        $result = $this->sql($sql, $rs);
+        if($limit === 1 and !$rs) {
+            if(count($result) < 1) {
+                return false;
+            }
+            return array_pop($result);
+        }
+        return $result;
     }
 
-    public function update($table, $data, $where, $return=false) {
+    public function update($table, $data, $where, $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
         $sql = "UPDATE $table SET ";
@@ -173,7 +187,7 @@ class Connection extends ConnectionShell {
         $sql .= implode(', ', $set);
         $sql .= ' ' . $this->build_where($where);
 
-        return $this->sql($sql);
+        return $this->sql($sql, $rs);
     }
 
     private function build_where($where = array()) {
@@ -228,7 +242,8 @@ class Result extends ResultShell {
      * @return bool
      */
     public function success() {
-        return pg_result_error($this->_result) === false ? true : false;
+        $error = pg_result_error($this->_result);
+        return $error === false or empty($error) ? true : false;
     }
 
     public function count_rows_altered() {

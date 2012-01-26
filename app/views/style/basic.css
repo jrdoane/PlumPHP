@@ -11,6 +11,12 @@ div#tpl_header {
     min-width: 640px;
 }
 
+div#tpl_footer {
+    text-align: center;
+    width: 100%;
+    height: auto;
+}
+
 ul#breadcrumbs {
     margin 2px;
     padding 1px;

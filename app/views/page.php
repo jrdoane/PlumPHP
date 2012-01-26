@@ -39,15 +39,15 @@ $html->h(3, \Plum\Config::get('site_name', 'web'), array('id' => 'pagetitle'));
 if(\Plum\Auth::is_logged_in()) {
     $user = \Plum\Auth::get_current_user();
     $loginstr = \Plum\Lang::get('youareloggedinas') . " {$user->username}";
-    $loginstr .= ' ' . \Plum\Xml::tag('a', 
+    $loginstr .= ' (' . \Plum\Xml::tag('a', 
         array('href' => \Plum\Uri::href('login/logout')),
         \Plum\Lang::get('logout')
-    );
+    ) . ')';
 } else {
     $loginstr = \Plum\Lang::get('youarenotloggedin');
 }
-$html->p($loginstr, array('id' => 'loginstring'))
-    ->a(\Plum\Lang::get('logout'), \Plum\Uri::href('login/logout'));
+
+$html->raw('p', array('id' => 'loginstring'), $loginstr);
 $html->ul($bread_list);
 
 // Lets say where we are and provide it as a link for starters.
@@ -82,17 +82,29 @@ $html->step_out('body');
 if(!empty($page->body)) {
     $html->div($div_body);
     if(is_object($page->body)) {
-        $html->merge_builders($page->body);
+        if(\Plum\HtmlBuilder::is_builder($page->body)) {
+            $html->merge_builders($page->body);
+        } else {
+            // TODO: Handle it.
+        }
     }
     $html->step_out('body');
 }
 
 $html->hr();
-if(!empty($page->footer)) {
-    $html->div($div_footer);
-
-    $html->step_out('html');
+if(empty($page->footer)) {
+    $page->footer = new \Plum\HtmlBuilder('div', $div_footer);
 }
+if(is_string($page->footer)) {
+    $html->div($div_footer, $page->footer);
+}
+if(\Plum\HtmlBuilder::is_builder($page->footer)) {
+    if(\Plum\Auth::is_privileged('site:admin')) {
+        $page->footer->a(\Plum\Lang::get('adminpanel'), \Plum\Uri::href('admin'));
+    }
+    $html->merge_builders($page->footer, true);
+}
+$html->step_out('html');
 ?>
 
 <?= $html->get_string() ?>

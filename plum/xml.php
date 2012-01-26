@@ -66,9 +66,14 @@ class XmlBuilder {
         return $this->_top;
     }
 
-    public function merge_builders(&$builder) {
+    // todo: start here.
+    public function merge_builders(&$builder, $usetop=false) {
         $btop = $builder->get_top();
-        $this->add_children($btop->_children);
+        if($usetop) {
+            $this->add_child($btop);
+        } else {
+            $this->add_children($btop->_children);
+        }
     }
 
     public function add_child(&$child) {
@@ -254,6 +259,21 @@ class XmlBuilder {
             $out .= '  '; // Add 2 spaces for every node we go in.
         }
         return $out;
+    }
+
+    // TODO: Make this check parent claseses for these two.
+    public static function is_builder($b) {
+        if(empty($b)) {
+            return false;
+        }
+        $classes = array(
+            'Plum\HtmlBuilder',
+            'Plum\XmlBuilder'
+        );
+        if(in_array(get_class($b), $classes)) {
+            return true;
+        }
+        return false;
     }
 }
 
