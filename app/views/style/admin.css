@@ -1,0 +1,9 @@
+div#admin_column_left {
+    float: left;
+    width: 200px;
+}
+
+div#admin_column_center {
+    width: auto;
+    margin-left: 210px;
+}

@@ -27,6 +27,7 @@ class Admin extends \Plum\Controller {
         $admin_html = \Plum\View::load('admin');
         $page = new stdClass;
         $page->body = \Plum\View::load('admin');
+        $page->styles = array('basic', 'admin');
         $page->breadcrumbs = array (
             array (
                 'text' => \Plum\Lang::get('administration'),

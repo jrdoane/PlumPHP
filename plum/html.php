@@ -115,8 +115,8 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('br');
     }
 
-    public function &hr() {
-        return $this->tag('hr');
+    public function &hr($id='') {
+        return $this->tag('hr', array('id' => $id));
     }
 
     public function &span($text, $attr = array()) {
@@ -205,7 +205,7 @@ class HtmlBuilder extends XmlBuilder{
 
     public function &link_style($url) {
         $attr = array(
-            'href' => Uri::href($url),
+            'href' => $url,
             'rel' => 'stylesheet',
             'type' => 'text/css',
             'media' => 'screen'

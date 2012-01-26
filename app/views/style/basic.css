@@ -15,6 +15,7 @@ div#tpl_footer {
     text-align: center;
     width: 100%;
     height: auto;
+    clear: both;
 }
 
 ul#breadcrumbs {
@@ -69,6 +70,10 @@ hr {
     background-color: #51945E;
     height: 1px;
     border: 0;
+}
+
+hr#footer_hr {
+    clear: both;
 }
 
 p#loginstring {

@@ -9,7 +9,14 @@ $html = new \Plum\HtmlBuilder();
 // TODO: Re-add this when we actually need it.
 $html->head();
 $html->title();
-$html->link_style('style');
+if(!empty($page->styles) & is_string($page->styles)) {
+    $page->styles = array($page->styles);
+}
+if(!empty($page->styles) & is_array($page->styles)) {
+    foreach($page->styles as $style) {
+        $html->link_style(\Plum\Uri::href("style/get/$style"));
+    }
+}
 $html->step_out('html');
 
 // Enter the html body and create a new drive using the header attributes.
@@ -91,7 +98,7 @@ if(!empty($page->body)) {
     $html->step_out('body');
 }
 
-$html->hr();
+$html->hr('footer_hr');
 if(empty($page->footer)) {
     $page->footer = new \Plum\HtmlBuilder('div', $div_footer);
 }

@@ -16,7 +16,7 @@
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
 class Style extends \Plum\Controller {
-    public function index() {
-        \Plum\View::load('style');
+    public function get($name) {
+        \Plum\View::load('style', array('name' => $name));
     }
 }
