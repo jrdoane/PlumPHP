@@ -36,6 +36,10 @@ class Admin extends \Plum\Controller {
         \Plum\View::load('page', array('page' => $page));
     }
 
+    public function motd() {
+
+    }
+
     private function nav_column($current) {
     }
 

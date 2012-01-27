@@ -52,6 +52,14 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('head', array(), '', true);
     }
 
+    public function &script_src($src) {
+        return $this->tag('script', array('src' => $src), ' ', false);
+    }
+
+    public function &script_str($js) {
+        return $this->tag('script', array(), $js, false);
+    }
+
     /**
      * Simple title wrapper for the title tag. It takes a string or no string, 
      * and will do some string magic if you would like the site name in the 

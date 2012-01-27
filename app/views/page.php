@@ -9,6 +9,9 @@ $html = new \Plum\HtmlBuilder();
 // TODO: Re-add this when we actually need it.
 $html->head();
 $html->title();
+if(empty($page->styles)) {
+    $page->styles = array('basic');
+}
 if(!empty($page->styles) & is_string($page->styles)) {
     $page->styles = array($page->styles);
 }
@@ -16,6 +19,12 @@ if(!empty($page->styles) & is_array($page->styles)) {
     foreach($page->styles as $style) {
         $html->link_style(\Plum\Uri::href("style/get/$style"));
     }
+}
+
+// TinyMCE time!
+// Here goes nothing!
+if(!empty($page->rtf)) {
+    $html->merge_builders(\Plum\View::load('tinymce'));
 }
 $html->step_out('html');
 
