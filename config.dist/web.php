@@ -27,3 +27,6 @@ $config['default_method'] = 'index'; // This is the default method that gets cal
 $config['site_name'] = 'PlumPortal 1.0';
 $config['site_name_short'] = 'PlumPortal';
 
+$config['dbsession'] = true;
+$config['session_timeout'] = 3600; // 1 Hour
+

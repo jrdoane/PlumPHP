@@ -39,11 +39,14 @@ class Session {
         $conn = DB::get_conn();
 
         // Use cookie sessions if there is no database.
-        self::$_use_database = !empty($conn);
+        self::$_use_database = Config::get('dbsession', 'web');
 
         if(self::$_use_database == true) {
             // Grab data from the database.
-            if($session = $conn->select('session', array('sessid' => session_id()), 1)) {
+            $session = $session = $conn->select('session', array('sessid' => session_id()), 1);
+            $stimeout = Config::get('session_timeout', 'web');
+
+            if(!empty($session) & $session->time_modified < time() - $stimeout) {
                 self::$_session = json_decode($session->data, true);
                 if(!empty(self::$_session['obj_names'])) {
                     foreach(self::$_session as $sin => &$si) {
@@ -54,6 +57,9 @@ class Session {
                 }
                 self::$_stored_session = $session;
             } else {
+                if(!empty($session)) {
+                    $conn->delete('session', array('sessid' => session_id()));
+                }
                 self::$_session = array();
                 self::$_stored_session = false;
             }
@@ -61,6 +67,14 @@ class Session {
             // Grab data from the php session (cookie.)
             self::$_session = $_SESSION;
         }
+    }
+
+    // TODO
+    public static function clean_sessions() {
+    }
+
+    // TODO
+    public static function purge_sessions() {
     }
 
     /**

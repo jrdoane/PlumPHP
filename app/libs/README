@@ -1,0 +1,30 @@
+PlumPHP - Application libraries.
+(Unless you really want to write your entire application within just views and
+controllers. I wouldn't recommend it though. --jdoane)
+
+Created by Jonathan Doane. <jrdoane@gmail.com>
+
+PlumPHP is a PHP framework that utilizes PHP 5.3 and PostgreSQL functionality.
+Using these two technologies and deeply integrating them, the hope is to create
+a platform for rapid development with high scalibility. This platform has
+a large emphasis on static class methods and namespacing for organization.
+
+=================
+=               =
+=  Legal stuff  =
+=               =
+=========================================================================
+= PlumPHP is free software: you can redistribute it and/or modify       =
+= it under the terms of the GNU General Public License as published by  =
+= the Free Software Foundation, either version 3 of the License, or     =
+= (at your option) any later version.                                   =
+=                                                                       =
+= PlumPHP is distributed in the hope that it will be useful,            =
+= but WITHOUT ANY WARRANTY; without even the implied warranty of        =
+= MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         =
+= GNU General Public License for more details.                          =
+=                                                                       =
+= You should have received a copy of the GNU General Public License     =
+= along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.      =
+=                                                                       =
+=========================================================================
