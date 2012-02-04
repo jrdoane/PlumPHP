@@ -41,7 +41,7 @@ class XmlBuilder {
     private $_tagcounts;
     private $_specialchars;
 
-    public function __construct($name, $attr = array(), $value = '') {
+    public function __construct($name, $attr = array(), $value = null) {
         $this->_top = new XmlNode($name, $attr, $value);
         $this->_ptr =& $this->_top;
         $this->_dft = 0;
@@ -99,12 +99,9 @@ class XmlBuilder {
      * @param bool      $step_in determines if the tree pointer should go instead of this new node.
      * @return object
      */
-    public function &raw($name, $attr = array(), $value = '', $step_in = false) {
+    public function &raw($name, $attr = array(), $value = null, $step_in = false) {
         if(empty($attr)) {
             $attr = array();
-        }
-        if(empty($value)) {
-            $value = '';
         }
         if(empty($step_in)) {
             $step_in = false;
@@ -140,10 +137,7 @@ class XmlBuilder {
      * @param bool      $step_in determines if the tree pointer should go instead of this new node.
      * @return object
      */
-    public function &tag($name, $attr = array(), $value = '', $step_in = false) {
-        if(empty($value)) {
-            $value = '';
-        }
+    public function &tag($name, $attr = array(), $value = null, $step_in = false) {
         if($this->_specialchars and !empty($value)) {
             $value = htmlspecialchars($value);
         }
