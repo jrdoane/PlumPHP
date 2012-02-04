@@ -54,37 +54,12 @@ abstract class Result {
      * returned.
      * Otherwise a false will be returned.
      *
-     * @param object    $result is a result object.
      * @param bool      $obj determines if records are returned as objects or arrays.
      * @param int       $return specifies how many records to return if some are 
      *                  encountered.
      * @return mixed
      */
-    public function simplify_result($obj=true, $return=null) {
-        if(!$this->success()) {
-            if($this->has_next()) {
-                throw new \Plum\Exception("WTF!");
-            }
-            return false;
-        }
-        if($this->has_next()) {
-            if($return === 1) {
-                return $this->get_next($obj);
-            }
-            if($obj) {
-                $records = $this->get_all_obj();
-            } else {
-                $records = $this->get_all_assoc();
-            }
-
-            if(is_numeric($return) & $return > 1) {
-                return array_slice($records, 0, $return);
-            }
-
-            return $records;
-        }
-        return true;
-    }
+    public abstract function simplify($obj=true, $return=null);
 
     public abstract function __construct($query);
     public abstract function status();

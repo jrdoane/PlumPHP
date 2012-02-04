@@ -43,10 +43,10 @@ class Session {
 
         if(self::$_use_database == true) {
             // Grab data from the database.
-            $session = $session = $conn->select('session', array('sessid' => session_id()), 1);
+            $session = $conn->select('session', array('sessid' => session_id()), 1);
             $stimeout = Config::get('session_timeout', 'web');
 
-            if(!empty($session) & $session->time_modified < time() - $stimeout) {
+            if(self::validate_session($session)) {
                 self::$_session = json_decode($session->data, true);
                 if(!empty(self::$_session['obj_names'])) {
                     foreach(self::$_session as $sin => &$si) {
@@ -65,8 +65,35 @@ class Session {
             }
         } else {
             // Grab data from the php session (cookie.)
-            self::$_session = $_SESSION;
+            self::$_session =& $_SESSION;
         }
+    }
+
+    /**
+     * Is this a valid session? From date and timeout to nulls!
+     *
+     * @param mixed     $session Something that could be a session.
+     * @return bool
+     */
+    public static function validate_session($session) {
+        // HERE WE GO!
+        if(empty($session)) {
+            return false;
+        }
+        if(!is_object($session)) {
+            return false;
+        }
+        if(empty($session->time_modified)) {
+            return false;
+        }
+        if(!is_numeric($session->time_modified)) {
+            return false;
+        }
+        $max_age = time() - Config::get('session_timeout', 'web');
+        if($session->time_modified < $max_age) {
+            return false;
+        }
+        return true;
     }
 
     // TODO

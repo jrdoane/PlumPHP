@@ -61,7 +61,7 @@ class Connection extends ConnectionShell {
         }
         $result = new Result($result);
         if(!$rs) {
-            return $result->simplify_result();
+            return $result->simplify();
         }
         return $result;
     }
@@ -157,18 +157,15 @@ class Connection extends ConnectionShell {
         ";
         $sql .= $this->build_where($where);
         if(!empty($sort)) {
-            $sql .= "ORDER BY $sort\n";
+            $sql .= " ORDER BY $sort\n";
         }
         if($limit != 0) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";
         }
 
-        $result = $this->sql($sql, $rs);
-        if($limit === 1 and !$rs) {
-            if(count($result) < 1) {
-                return false;
-            }
-            return array_pop($result);
+        $result = $this->sql($sql, true);
+        if(!$rs) {
+            return $result->simplify(true, $limit);
         }
         return $result;
     }
@@ -303,6 +300,50 @@ class Result extends ResultShell {
         }
         return $objects;
     }
+
+    public function simplify($obj=true, $return=null) {
+        $status = pg_result_status($this->_result);
+        if(!$this->success()) {
+            // This means error. Return false.
+            return false;
+        }
+
+        // We got records back. This could be a select, or an update, insert, or 
+        // delete with a RETURNING statement. If the record count is zero, it 
+        // means we got no records back but the query succeeded.
+        switch($status) {
+        case PGSQL_TUPLES_OK:
+            $count = $this->count_rows_returned();
+            if($return === 1) {
+                // This is one of the few times we return false when success was 
+                // true. A single record was expected and nothing was returned. 
+                // We succeeded but we didn't get what we were expecting.
+                if($count <= 0) { return false; }
+                return $this->get_next($obj);
+            }
+
+            if($count <= 0) {
+                return array();
+            }
+
+            if($obj) {
+                $records = $this->get_all_obj();
+            } else {
+                $records = $this->get_all_assoc();
+            }
+
+            if(is_numeric($return) & $return > 1) {
+                return array_slice($records, 0, $return);
+            }
+            return $records;
+        case PGSQL_COMMAND_OK:
+            return true;
+        default:
+            new \Plum\Exception('Unknown pgsql result status: ' . $status);
+        }
+        return true;
+    }
+
 }
 
 class Table {

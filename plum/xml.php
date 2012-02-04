@@ -25,7 +25,7 @@ class Xml {
                 $out .= " {$n}=\"{$v}\"";
             }
         }
-        if(empty($value)) {
+        if($value === null) {
             $out .= " />";
             return $out;
         }
@@ -287,7 +287,7 @@ class XmlNode {
     public $_children;
     public $_parent;
 
-    public function __construct($name, $attributes=array(), $value='') {
+    public function __construct($name, $attributes=array(), $value=null) {
         $this->_name = $name;
         $this->_attributes = $attributes;
         $this->_value = $value;

@@ -1,6 +1,6 @@
 <?php
 /**
- * PlumPHP Welcome Controller
+ * PlumPHP Portal Primary Application Library
  *
  * PlumPHP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,4 @@
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Motd_Form extends \Plum\Form {
-    public function assemble() {
-        $this->add('textarea', array(), 'MOTD Text');
-        $this->add('submit', array('value' => 'Save'));
-    }
-}
+

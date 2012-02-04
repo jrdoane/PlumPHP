@@ -29,5 +29,6 @@ $config['debug'] = true;
  * Add non-core modules here.
  */
 $config['extensions'] = array (
-    'Auth'
+    'Auth',
+    'Form'
 );

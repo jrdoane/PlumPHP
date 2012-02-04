@@ -28,8 +28,9 @@ abstract class Form {
     protected $_html;
     protected $_fields;
     protected $_validation;
+    protected $_cached_validation;
 
-    public function __construct($action, $method='POST') {
+    public function __construct($action, $method='POST', $header='') {
         if(is_array($action)) {
             if(empty($action['method'])) {
                 $action['method'] = $method;
@@ -42,8 +43,16 @@ abstract class Form {
         }
 
         $this->_html = new HtmlBuilder('form', $action);
+        if(!empty($header)) {
+            $this->_html->fieldset();
+            $this->_html->legend($header);
+        }
         $this->_fields = array();
         $this->_validation = array();
+        $this->_cached_validation = null;
+
+        // Form ready to be assembled.
+        $this->assemble();
     }
 
     /**
@@ -57,20 +66,67 @@ abstract class Form {
      * Using defined fields, get the data submitted from the form, if it exists.
      */
     public function get_data() {
+        $output = array();
+        foreach($this->_fields as $field) {
+            if(!empty($field->_attributes) & !empty($field->_attributes['name'])) {
+                $name = $field->_attributes['name'];
+                $output[$name] = HTTP::input($name);
+            }
+        }
+    }
+
+    public function get_valid_data() {
+        if(!$this->validate()) {
+            return false;
+        }
+        return $this->get_data();
     }
 
     /**
      * Using defined rules, check to see if the input validates.
      */
     public function validate() {
+        $data = $this->get_data();
+        foreach($this->_validation as $name => $rule) {
+            switch($rule->type) {
+            case \Plum\FORM_RULE_REQUIRED:
+                if(empty($data[$name])) {
+                    return false;
+                }
+                break;
+            case \Plum\FORM_RULE_NUMERIC:
+                if(empty($data[$name])) {
+                    return false;
+                }
+                if(!is_numeric($data[$name])) {
+                    return false;
+                }
+                break;
+            case \Plum\FORM_REGEX:
+                if(!preg_match($rule->rule, $data[$name])) {
+                    return false;
+                }
+                break;
+            default:
+                throw new Exception('unknown rule ('.var_export($rule->type, true).')');
+            }
+        }
+        return true;
     }
 
     public function add($html_name, $attr, $label_text='', $rule=null) {
         if(empty($attr) & is_array($attr)) {
             new Exception();
         }
-        $node = new HtmlNode($input, $name, $attr);
-        $this->_fields[$name] =& $node;
+        $short_tag = '';
+        if($html_name == 'textarea') { $short_tag = ' '; }
+        $node = new HtmlNode($html_name, $attr, $short_tag);
+        // Only check fields with names provided. Otherwise we won't watch the 
+        // field for data or validation.
+        if(!empty($attr['name'])) {
+            $name = $attr['name'];
+            $this->_fields[$name] =& $node;
+        }
         $this->_html->add_child($node);
     }
 
@@ -83,9 +139,14 @@ abstract class Form {
             $this->_validation = new stdClass;
         }
         if(empty($this->_validation[$name])) {
-            $this->_validation->$name = array()
+            $this->_validation->$name = array();
         }
-        $this->_validation->$name[] = $rule_obj;
+        $v =& $this->_validation->$name;
+        $v[] = $rule_obj;
+    }
+
+    public function get_builder() {
+        return $this->_html;
     }
 
     public static function all_rules() {

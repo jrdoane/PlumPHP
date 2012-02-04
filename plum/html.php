@@ -143,6 +143,10 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('fieldset', $attr, '', true);
     }
 
+    public function &legend($text, $attr = array()) {
+        return $this->tag('legend', $attr, $text);
+    }
+
     public function &label($text, $for = '', $attr = array()) {
         if(!empty($for)) {
             $attr['for'] = $for;
