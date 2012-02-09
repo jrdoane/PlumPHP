@@ -57,7 +57,7 @@ class HtmlBuilder extends XmlBuilder{
     }
 
     public function &script_str($js) {
-        return $this->tag('script', array(), $js, false);
+        return $this->raw('script', array(), $js, false);
     }
 
     /**
@@ -92,16 +92,12 @@ class HtmlBuilder extends XmlBuilder{
      *                  attribute, or will take an array of attributes.
      * @return object
      */
-    public function &a($text, $url='') {
-        if(empty($url)) {
-            $url = array();
+    public function &a($text, $attr=array()) {
+        if(is_string($attr)) {
+            $attr = array('href' => $attr);
         }
 
-        if(is_string($url)) {
-            $url = array ('href' => $url);
-        }
-
-        return $this->tag('a', $url, $text);
+        return $this->tag('a', $attr, $text);
     }
 
     public function &h($level, $text, $attr = array()) {

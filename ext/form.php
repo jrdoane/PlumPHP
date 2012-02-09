@@ -114,13 +114,15 @@ abstract class Form {
         return true;
     }
 
-    public function add($html_name, $attr, $label_text='', $rule=null) {
+    public function add($html_name, $attr, $label_text='', $nowrap=false) {
         if(empty($attr) & is_array($attr)) {
             new Exception();
         }
-        $short_tag = '';
-        if($html_name == 'textarea') { $short_tag = ' '; }
-        $node = new HtmlNode($html_name, $attr, $short_tag);
+        $short_tag = null;
+        $tag = 'input';
+        if($html_name == 'textarea') { $tag = $html_name; $short_tag = ''; }
+        else { $attr['type'] = $html_name; }
+        $node = new HtmlNode($tag, $attr, $short_tag);
         // Only check fields with names provided. Otherwise we won't watch the 
         // field for data or validation.
         if(!empty($attr['name'])) {
@@ -128,6 +130,9 @@ abstract class Form {
             $this->_fields[$name] =& $node;
         }
         $this->_html->add_child($node);
+        if($nowrap or $html_name == 'hidden') {
+            $this->_html->br();
+        }
     }
 
     public function add_rule($name, $type, $rule) {

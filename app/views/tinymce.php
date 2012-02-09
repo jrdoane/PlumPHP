@@ -2,7 +2,7 @@
 
 $wwwroot = \Plum\Config::get('wwwroot', 'web');
 $html = new \Plum\HtmlBuilder('head');
-$html->script_src("{$wwwroot}js/tinymce/tiny_mce.js");
+$html->script_src("{$wwwroot}/js/tinymce/tiny_mce.js");
 $tinymce_conf = <<<EOF
     tinyMCE.init({
         // General options

@@ -4,7 +4,18 @@ $html = new \Plum\HtmlBuilder('div', array('id' => 'tpl_body'));
 
 $html->div(array('id' => 'admin_column_left'));
 $html->h(3, \Plum\Lang::get('general', 'admin'));
-$html->step_out();
+$html->ul();
+$html->li();
+$html->a(
+    \Plum\Lang::get('motd', 'admin'),
+    \Plum\Uri::href('admin/motd')
+);
+
+// Step out to the column div.
+$html->step_out('div');
+
+// Step out into the body div.
+$html->step_out('div');
 
 $html->div(array('id' => 'admin_column_center'));
 if(!isset($page)) { $page = false; }
@@ -20,3 +31,4 @@ $html->step_out();
 // This gives the data back to the controller rather than putting to stdout.
 // This enables objects to go back, instead of just strings.
 \Plum\View::set_return($html);
+

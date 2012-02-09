@@ -43,6 +43,7 @@ class Admin extends \Plum\Controller {
 
     public function motd() {
         $page =& $this->_page;
+        $page->rtf = true;
         $form = new Motd_Form(\Plum\Uri::href('admin/motd'), 'POST', \Plum\Lang::get('motd'));
         $page->body = $form->get_builder();
         \Plum\View::load('page', array('page' => $page));

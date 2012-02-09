@@ -192,9 +192,14 @@ class XmlBuilder {
 
                 // We're going to go back until we hit the tag we want.
                 do {
+                    /*
+                     * This check need not be done. If it needs to get checked 
+                     * first the while would have the conditional at the top, 
+                     * not the end. --jdoane
                     if($this->_ptr->_name == $to) {
                         break;
                     }
+                     */
                     if(!is_object($this->_ptr->_parent)) {
                         throw new Exception('Object expected, got ' . get_class($this->_ptr->parent));
                     }
