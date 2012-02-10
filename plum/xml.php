@@ -165,9 +165,12 @@ class XmlBuilder {
      * Example: $this->step_out('html') goes up to the top level html tag.
      *
      * @param mixed     $to tells the function how far to step out.
+     * @param int       $count is used if there is a string. This will determine 
+     *                  how many tags to jump over. 1 stays use the first tag, 2
+     *                  for a second tag, etc.
      * @return object
      */
-    public function &step_out($to = 1) {
+    public function &step_out($to = 1, $tagcount = 1) {
         if(empty($this->_ptr->_parent) or $this->_dft === 0) {
             throw new Exception("No parent to step out to.");
         }
@@ -191,21 +194,16 @@ class XmlBuilder {
                 }
 
                 // We're going to go back until we hit the tag we want.
-                do {
-                    /*
-                     * This check need not be done. If it needs to get checked 
-                     * first the while would have the conditional at the top, 
-                     * not the end. --jdoane
-                    if($this->_ptr->_name == $to) {
-                        break;
-                    }
-                     */
+                while($tagcount != 0) {
                     if(!is_object($this->_ptr->_parent)) {
                         throw new Exception('Object expected, got ' . get_class($this->_ptr->parent));
                     }
                     $this->_ptr =& $this->_ptr->_parent;
                     $this->_dft--;
-                } while ($this->_ptr->_name != $to);
+                    if($this->_ptr->_name == $to) {
+                        $tagcount--;
+                    }
+                }
             } else {
                 throw new ParameterException("Expected int or string and got neither.");
             }

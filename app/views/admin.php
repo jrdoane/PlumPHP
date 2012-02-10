@@ -12,10 +12,9 @@ $html->a(
 );
 
 // Step out to the column div.
-$html->step_out('div');
+$html->step_out('div', 2);
 
 // Step out into the body div.
-$html->step_out('div');
 
 $html->div(array('id' => 'admin_column_center'));
 if(!isset($page)) { $page = false; }
