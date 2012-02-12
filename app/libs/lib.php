@@ -16,4 +16,6 @@
  * along with PlumPHP.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+function fullname($user) {
+    return $user->firstname . ' ' . $user->lastname;
+}

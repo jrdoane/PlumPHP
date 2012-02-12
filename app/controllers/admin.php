@@ -30,6 +30,7 @@ class Admin extends \Plum\Controller {
         $page->breadcrumbs = array (
             array (
                 'text' => \Plum\Lang::get('administration'),
+                'url' => \Plum\Uri::href('admin')
             )
         );
 
@@ -43,6 +44,9 @@ class Admin extends \Plum\Controller {
 
     public function motd() {
         $page =& $this->_page;
+        $page->breadcrumbs[] = array(
+            'text' => \Plum\Lang::get('editmotd', 'admin')
+        );
         $page->rtf = true;
         $form = new Motd_Form(\Plum\Uri::href('admin/motd'), 'POST', \Plum\Lang::get('motd'));
         $page->body = $form->get_builder();

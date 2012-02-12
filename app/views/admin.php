@@ -7,7 +7,7 @@ $html->h(3, \Plum\Lang::get('general', 'admin'));
 $html->ul();
 $html->li();
 $html->a(
-    \Plum\Lang::get('motd', 'admin'),
+    \Plum\Lang::get('editmotd', 'admin'),
     \Plum\Uri::href('admin/motd')
 );
 

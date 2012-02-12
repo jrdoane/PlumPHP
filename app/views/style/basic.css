@@ -87,3 +87,9 @@ p#loginstring {
 h3#pagetitle {
     width: 50%;
 }
+
+fieldset {
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}

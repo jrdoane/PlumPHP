@@ -4,6 +4,9 @@
 if(empty($page)) {
     throw new \Plum\Exception('No page object passed to page view.');
 }
+
+require_once(dirname(dirname(__FILE__)) . '/libs/lib.php');
+
 $html = new \Plum\HtmlBuilder();
 
 // TODO: Re-add this when we actually need it.
@@ -54,7 +57,7 @@ $html->h(3, \Plum\Config::get('site_name', 'web'), array('id' => 'pagetitle'));
 // This should take two forms. Not logged in, and logged in.
 if(\Plum\Auth::is_logged_in()) {
     $user = \Plum\Auth::get_current_user();
-    $loginstr = \Plum\Lang::get('youareloggedinas') . " {$user->username}";
+    $loginstr = \Plum\Lang::get('youareloggedinas') . ' '. fullname($user);
     $loginstr .= ' (' . \Plum\Xml::tag('a', 
         array('href' => \Plum\Uri::href('login/logout')),
         \Plum\Lang::get('logout')
@@ -72,7 +75,10 @@ $html->li(false, array('class' => 'breadcrumb', 'id' => 'firstbreadcrumb'))
     ->step_out('ul');
 
 if(!empty($page->breadcrumbs)) {
+    $total = count($page->breadcrumbs);
+    $c = 0;
     foreach($page->breadcrumbs as $crumb) {
+        $c++;
         if(is_array($crumb)) {
             $crumb = (object)$crumb;
         }
@@ -83,7 +89,7 @@ if(!empty($page->breadcrumbs)) {
         }
         $html->li(false, array('class' => 'breadcrumb'))
             ->span('>');
-        if(!empty($crumb->url)) {
+        if(!empty($crumb->url) and $c != $total) {
             $html->a($crumb->text, $crumb->url);
         } else {
             $html->span($crumb->text);
