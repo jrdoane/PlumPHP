@@ -40,6 +40,7 @@ class XmlBuilder {
     private $_dft; // Distance from the top.
     private $_tagcounts;
     private $_specialchars;
+    private $_declaration;
 
     public function __construct($name, $attr = array(), $value = null) {
         $this->_top = new XmlNode($name, $attr, $value);
@@ -47,6 +48,7 @@ class XmlBuilder {
         $this->_dft = 0;
         $this->_tagcounts = array($name => 1); // For stepped in elements only.
         $this->_specialchars = true;
+        $this->_declaration = '<?xml version="1.0" encoding="UTF-8" ?>';
     }
 
     /**
@@ -240,7 +242,12 @@ class XmlBuilder {
             }
             $top->_value .= $out . $this->get_space_depth($depth - 1);
         }
-        return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
+
+        $output = Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
+        if($depth === 0) {
+            $output = $this->_declaration . "\n" . $output;
+        }
+        return $output;
     }
 
     /**

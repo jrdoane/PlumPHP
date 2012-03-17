@@ -38,7 +38,7 @@ class Auth {
         self::$_impersonate = null;
     }
 
-    public static function login($username, $password) {
+    public static function login($username, $password, $test=false) {
         $db = DB::get_conn();
         if(!$user = $db->select('user', array('username' => $username), 1)) {
             // User does not exist.
@@ -60,6 +60,12 @@ class Auth {
                 return false;
         }
 
+        // We just wanted to see if the user/password pair was valid.
+        if($test) {
+            return true;
+        }
+
+        // Log the user in.
         $user->last_login = time();
         $db->update('user', array('last_login' => time()), array('user_id' => $user->user_id));
         self::$_user = $user;
