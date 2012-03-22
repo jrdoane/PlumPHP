@@ -18,8 +18,15 @@
 
 // Just start assigning stuff to $config. It is an assoc array.
 
-$config['wwwroot'] = 'http://plum.peared.net:8080/';
+$config['wwwroot'] = 'http://yourwebsite.com/';
 $config['wwwfile'] = 'index.php'; // (With a properly configured .htaccess file, this can be ''
 
 $config['default_controller'] = 'welcome'; // Controller to default to if uri string is empty.
 $config['default_method'] = 'index'; // This is the default method that gets call if the uri string doesn't have a method.
+
+$config['site_name'] = 'Your websites full name here.';
+$config['site_name_short'] = 'Short name here.';
+
+$config['dbsession'] = false; // Are you going to be using a database?
+$config['session_timeout'] = 3600; // 1 Hour
+
