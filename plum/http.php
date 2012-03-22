@@ -15,6 +15,16 @@ class HTTP {
         header('HTTP/1.0 404 Not Found', false, 404);
     }
 
+    public static function redirect($url) {
+        // This is special. Since there might be components in plum that need to 
+        // shutdown properly, we're going to call init to shut things down. This 
+        // is particularly important if we want to save the state of the session 
+        // in the database.
+        Init::system_shutdown();
+        header("Location: {$url}");
+        exit();
+    }
+
     public static function input($name, $type=\Plum\PARAM_TEXT, $from=\Plum\FROM_REQUEST) {
         $locations = array();
         if(empty($from)) {
@@ -30,6 +40,9 @@ class HTTP {
             break;
         case \Plum\FROM_FILE:
             $input = !empty($_FILES[$name]) ? $_FILES[$name] : '';
+            break;
+        case \Plum\FROM_COOKIE:
+            $input = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : '';
             break;
         default:
             throw new UnknownParamTypeException($from);

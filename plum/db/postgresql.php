@@ -20,16 +20,21 @@ use \Plum\DB\Connection as ConnectionShell;
 use \Plum\DB\Result as ResultShell;
 use \Plum\DB\Query as QueryShell;
 use \Plum\DB\Table as TableShell;
+use \Plum\Exception as Exception;
 
 class Connection extends ConnectionShell {
+    private $_prefix;
     public function connect(
         $user, $password, $database, $server = 'localhost',
-        $port = 5432, $persistant = false
+        $port = 5432, $persistant = false, $prefix = ''
     ) {
         $connection_string = "dbname={$database} port={$port} host={$server} ";
         $connection_string .= "user={$user} password={$password}";
         $this->_connection = pg_connect($connection_string);
+        $this->_prefix = $prefix;
     }
+
+    public function get_prefix() { return $this->_prefix; }
 
     /**
      * Run some sql and take a crazy guess at what the output should be.
@@ -39,7 +44,7 @@ class Connection extends ConnectionShell {
      * @param string    $sql is a sql query.
      * @return \Plum\DB\Result
      */
-    public function sql($sql) {
+    public function sql($sql, $rs=false) {
         $result = pg_query($this->_connection, $sql);
         if($result == false) {
             $error = pg_last_error();
@@ -54,7 +59,11 @@ class Connection extends ConnectionShell {
         if($status === 1) {
             return true;
         }
-        return new Result($result);
+        $result = new Result($result);
+        if(!$rs) {
+            return $result->simplify();
+        }
+        return $result;
     }
 
     public function table_identifier() {
@@ -68,32 +77,36 @@ class Connection extends ConnectionShell {
         return "'".pg_escape_string($var)."'";
     }
 
-    public function insert($table, $data, $return=false) {
+    private function prep_table_name($table) {
+        $i = $this->table_identifier();
+        return $i.$this->_prefix.$table.$i;
+    }
+
+    public function insert($table, $data, $return=false, $rs=false) {
+        $table = $this->prep_table_name($table);
         if(empty($data)) {
             return true;
         }
-        $arrays_expected = false;
-        $i = $this->table_identifier();
-        $sql = "INSERT INTO {$i}$table{$i}\n";
+        $sql = "INSERT INTO $table\n";
         $cp = array();
         $row = array();
-        $insert_info= $this->build_values($data);
+        $insert_info = $this->build_values($data);
         $sql .= '(' . implode(', ', $insert_info->fields) . ")\nVALUES\n";
         $sql .= implode(",\n", $insert_info->data);
 
-        return $this->sql($sql);
+        return $this->sql($sql, $rs);
     }
 
     private function build_values($array, $obj=null) {
         $string = '';
-        if(!is_array($array)) {
+        if(!is_array($array) and !is_object($array)) {
             throw new Exception();
         }
 
         $row = array();
         $fields = array();
         foreach($array as $key => $value) {
-            if(is_array($value)) {
+            if(is_array($value) or is_object($value)) {
                 $obj = $this->build_values($value, $obj);
             } else {
                 $fields[] = $key;
@@ -113,9 +126,10 @@ class Connection extends ConnectionShell {
         return $obj;
     }
 
-    public function delete($table, $where=array(), $return=false) {
+    public function delete($table, $where=array(), $return=false, $rs=false) {
+        $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
-        $sql = "DELETE FROM {$i}$table{$i}\n";
+        $sql = "DELETE FROM $table\n";
         if(!empty($where)) {
             if(!is_array($where)) {
                 throw new \Plum\ArrayExpectedException($where);
@@ -123,6 +137,7 @@ class Connection extends ConnectionShell {
             $sql .= "WHERE ";
             $where_array = array();
             foreach($where as $field => &$value) {
+                $value = $this->process_input($value);
                 $where_array[] = "{$i}$field{$i} = $value";
             }
             $sql .= implode(' AND ', $where_array);
@@ -130,38 +145,46 @@ class Connection extends ConnectionShell {
         if($return) {
             $sql .= "\nRETURNING *";
         }
-        return $this->sql($sql);
+        return $this->sql($sql, $rs);
 
     }
 
-    public function select($table, $where=array(), $limit=0, $offset=0, $sort='') {
-        $i = $this->table_identifier();
+    public function select($table, $where=array(), $limit=0, $offset=0, $sort='', $rs=false) {
+        $table = $this->prep_table_name($table);
         $sql = "
             SELECT *
-            FROM {$i}{$table}{$i}
+            FROM {$table}
         ";
         $sql .= $this->build_where($where);
         if(!empty($sort)) {
-            $sql .= "ORDER BY $sort\n";
+            $sql .= " ORDER BY $sort\n";
         }
         if($limit != 0) {
             $sql .= " LIMIT {$limit} OFFSET {$offset}";
         }
-        return $this->sql($sql);
+
+        $result = $this->sql($sql, true);
+        if(!$rs) {
+            return $result->simplify(true, $limit);
+        }
+        return $result;
     }
 
-    public function update($table, $data, $where, $return=false) {
+    public function update($table, $data, $where, $return=false, $rs=false) {
+        $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
-        $sql = "UPDATE {$i}$table{$i} SET ";
+        $sql = "UPDATE $table SET ";
         $tmpsql = '';
-        $data = $this->insert_values_recurse($data); //Cleans and makes multi-dim arrays 1-d arrays.
+
         $set = array();
         foreach($data as $field => $value) {
+            $value = $this->process_input($value);
             $set[] = "{$i}$field{$i} = $value";
         }
         $sql .= implode(', ', $set);
-        $sql .= $this->build_where($where);
-        return $this->sql($sql);
+        $sql .= ' ' . $this->build_where($where);
+
+        return $this->sql($sql, $rs);
     }
 
     private function build_where($where = array()) {
@@ -181,22 +204,6 @@ class Connection extends ConnectionShell {
             $sql .= 'WHERE ' . implode(' AND ', $where_sql) . "\n";
         }
         return $sql;
-    }
-
-    private function insert_values_recurse($data) {
-        $rd = array();
-        foreach($data as $field => &$value) {
-            $td = array();
-            if(is_array($value)) {
-                $rd = array_merge($rd, $this->insert_values_recurse($value));
-            }
-            $td[$field] = $this->process_input($value);
-        }
-        if(!empty($td)) {
-            $rd[] = $td;
-        }
-
-        return $rd;
     }
 }
 
@@ -232,7 +239,8 @@ class Result extends ResultShell {
      * @return bool
      */
     public function success() {
-        return pg_result_error($this->_result) === false ? true : false;
+        $error = pg_result_error($this->_result);
+        return $error === false or empty($error) ? true : false;
     }
 
     public function count_rows_altered() {
@@ -292,6 +300,50 @@ class Result extends ResultShell {
         }
         return $objects;
     }
+
+    public function simplify($obj=true, $return=null) {
+        $status = pg_result_status($this->_result);
+        if(!$this->success()) {
+            // This means error. Return false.
+            return false;
+        }
+
+        // We got records back. This could be a select, or an update, insert, or 
+        // delete with a RETURNING statement. If the record count is zero, it 
+        // means we got no records back but the query succeeded.
+        switch($status) {
+        case PGSQL_TUPLES_OK:
+            $count = $this->count_rows_returned();
+            if($return === 1) {
+                // This is one of the few times we return false when success was 
+                // true. A single record was expected and nothing was returned. 
+                // We succeeded but we didn't get what we were expecting.
+                if($count <= 0) { return false; }
+                return $this->get_next($obj);
+            }
+
+            if($count <= 0) {
+                return array();
+            }
+
+            if($obj) {
+                $records = $this->get_all_obj();
+            } else {
+                $records = $this->get_all_assoc();
+            }
+
+            if(is_numeric($return) & $return > 1) {
+                return array_slice($records, 0, $return);
+            }
+            return $records;
+        case PGSQL_COMMAND_OK:
+            return true;
+        default:
+            new \Plum\Exception('Unknown pgsql result status: ' . $status);
+        }
+        return true;
+    }
+
 }
 
 class Table {

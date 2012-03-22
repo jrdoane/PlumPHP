@@ -25,7 +25,7 @@ class Xml {
                 $out .= " {$n}=\"{$v}\"";
             }
         }
-        if(empty($value)) {
+        if($value === null) {
             $out .= " />";
             return $out;
         }
@@ -39,12 +39,16 @@ class XmlBuilder {
     private $_ptr; // pointer within the tree.
     private $_dft; // Distance from the top.
     private $_tagcounts;
+    private $_specialchars;
+    private $_declaration;
 
-    public function __construct($name, $attr = array(), $value = '') {
+    public function __construct($name, $attr = array(), $value = null) {
         $this->_top = new XmlNode($name, $attr, $value);
         $this->_ptr =& $this->_top;
         $this->_dft = 0;
         $this->_tagcounts = array($name => 1); // For stepped in elements only.
+        $this->_specialchars = true;
+        $this->_declaration = '<?xml version="1.0" encoding="UTF-8" ?>';
     }
 
     /**
@@ -57,21 +61,49 @@ class XmlBuilder {
     }
 
     public function &get_current_children() {
-        return $this->_ptr->get
+        return $this->_ptr->get_children();
+    }
+
+    public function &get_top() {
+        return $this->_top;
+    }
+
+    // todo: start here.
+    public function merge_builders(&$builder, $usetop=false) {
+        $btop = $builder->get_top();
+        if($usetop) {
+            $this->add_child($btop);
+        } else {
+            $this->add_children($btop->_children);
+        }
+    }
+
+    public function add_child(&$child) {
+        $this->_ptr->add_node($child);
+    }
+
+    public function add_children(&$children) {
+        foreach($children as &$child) {
+            self::add_child($child);
+        }
     }
 
     /**
      * Creates an XML tag.
-     * Returns reference of itself, allows method chaining.
+     * Returns reference of itself ($this), allows method chaining.
      *
-     * WARNING! Unpredictable behavior when using return while chaining.
+     * Value isn't altered in any way shape or form. This method is good if the 
+     * XML builder is going to be taking in values with xml already in it.
+     *
+     * @param string    $name is the name of the tag.
+     * @param array     $attr is an array of attributes for the element.
+     * @param string    $value is the string to put between the opening and closing tags.
+     * @param bool      $step_in determines if the tree pointer should go instead of this new node.
+     * @return object
      */
-    public function &tag($name, $attr = array(), $value = '', $step_in = false) {
+    public function &raw($name, $attr = array(), $value = null, $step_in = false) {
         if(empty($attr)) {
             $attr = array();
-        }
-        if(empty($value)) {
-            $value = '';
         }
         if(empty($step_in)) {
             $step_in = false;
@@ -95,6 +127,26 @@ class XmlBuilder {
     }
 
     /**
+     * Creates an XML tag.
+     * Returns reference of itself ($this), allows method chaining.
+     *
+     * tag runs htmlspecialchars on the input. If you don't want this use the 
+     * `raw` method instead.
+     *
+     * @param string    $name is the name of the tag.
+     * @param array     $attr is an array of attributes for the element.
+     * @param string    $value is the string to put between the opening and closing tags.
+     * @param bool      $step_in determines if the tree pointer should go instead of this new node.
+     * @return object
+     */
+    public function &tag($name, $attr = array(), $value = null, $step_in = false) {
+        if($this->_specialchars and !empty($value)) {
+            $value = htmlspecialchars($value);
+        }
+        return $this->raw($name, $attr, $value, $step_in);
+    }
+
+    /**
      * Gets the distance from the top of the tree.
      * Important for indenting xml output.
      * 
@@ -115,9 +167,12 @@ class XmlBuilder {
      * Example: $this->step_out('html') goes up to the top level html tag.
      *
      * @param mixed     $to tells the function how far to step out.
+     * @param int       $count is used if there is a string. This will determine 
+     *                  how many tags to jump over. 1 stays use the first tag, 2
+     *                  for a second tag, etc.
      * @return object
      */
-    public function &step_out($to = 1) {
+    public function &step_out($to = 1, $tagcount = 1) {
         if(empty($this->_ptr->_parent) or $this->_dft === 0) {
             throw new Exception("No parent to step out to.");
         }
@@ -141,19 +196,28 @@ class XmlBuilder {
                 }
 
                 // We're going to go back until we hit the tag we want.
-                do {
-                    if($this->_ptr->_name == $to) {
-                        break;
-                    }
+                while($tagcount != 0) {
                     if(!is_object($this->_ptr->_parent)) {
                         throw new Exception('Object expected, got ' . get_class($this->_ptr->parent));
                     }
                     $this->_ptr =& $this->_ptr->_parent;
                     $this->_dft--;
-                } while ($this->_ptr->_name != $to);
+                    if($this->_ptr->_name == $to) {
+                        $tagcount--;
+                    }
+                }
             } else {
                 throw new ParameterException("Expected int or string and got neither.");
             }
+        }
+        return $this;
+    }
+
+    public function &specialchars($enabled) {
+        if($enabled) {
+            $this->_specialchars = true;
+        } else {
+            $this->_specialchars = false;
         }
         return $this;
     }
@@ -169,9 +233,6 @@ class XmlBuilder {
         } else {
             $top =& $this->_top;
         }
-        // We want to make sure everything is XML/HTML friendly before we start 
-        // adding XML with it which would make this impossible any later.
-        $top->_value = htmlspecialchars($top->_value);
 
         if(!empty($top->_children)) {
             $out = "\n";
@@ -181,7 +242,12 @@ class XmlBuilder {
             }
             $top->_value .= $out . $this->get_space_depth($depth - 1);
         }
-        return Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
+
+        $output = Xml::tag($top->get_name(), $top->get_attributes(), $top->get_value()) . "\n";
+        if($depth === 0) {
+            $output = $this->_declaration . "\n" . $output;
+        }
+        return $output;
     }
 
     /**
@@ -198,6 +264,21 @@ class XmlBuilder {
         }
         return $out;
     }
+
+    // TODO: Make this check parent claseses for these two.
+    public static function is_builder($b) {
+        if(empty($b)) {
+            return false;
+        }
+        $classes = array(
+            'Plum\HtmlBuilder',
+            'Plum\XmlBuilder'
+        );
+        if(in_array(get_class($b), $classes)) {
+            return true;
+        }
+        return false;
+    }
 }
 
 /**
@@ -210,7 +291,7 @@ class XmlNode {
     public $_children;
     public $_parent;
 
-    public function __construct($name, $attributes=array(), $value='') {
+    public function __construct($name, $attributes=array(), $value=null) {
         $this->_name = $name;
         $this->_attributes = $attributes;
         $this->_value = $value;

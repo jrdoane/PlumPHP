@@ -52,8 +52,52 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('head', array(), '', true);
     }
 
+    public function &script_src($src) {
+        return $this->tag('script', array('src' => $src), ' ', false);
+    }
+
+    public function &script_str($js) {
+        return $this->raw('script', array(), $js, false);
+    }
+
+    /**
+     * Simple title wrapper for the title tag. It takes a string or no string, 
+     * and will do some string magic if you would like the site name in the 
+     * title which defaults to enabled.
+     *
+     * @param string    $string is some text that will become the title.
+     * @param bool      $prepend if true (default) will add the site name.
+     */
+    public function &title($string = '', $prepend = true) {
+        if($prepend) {
+            $site = Config::get('site_name_short', 'web');
+            if(empty($string)) {
+                $string = $site;
+            } else {
+                $string = $site . ': ' . $string;
+            }
+        }
+        return $this->tag('title', array(), $string);
+    }
+
     public function &body() {
         return $this->tag('body', array(), '', true);
+    }
+
+    /**
+     * Anchor (chain)method. Builds an anchor for you.
+     *
+     * @param string    $text is what is inside the a tag.
+     * @url mixed       $url is either a string, which will be the href 
+     *                  attribute, or will take an array of attributes.
+     * @return object
+     */
+    public function &a($text, $attr=array()) {
+        if(is_string($attr)) {
+            $attr = array('href' => $attr);
+        }
+
+        return $this->tag('a', $attr, $text);
     }
 
     public function &h($level, $text, $attr = array()) {
@@ -75,6 +119,13 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('br');
     }
 
+    public function &hr($id='') {
+        return $this->tag('hr', array('id' => $id));
+    }
+
+    public function &span($text, $attr = array()) {
+        return $this->tag('span', $attr, $text);
+    }
 
     public function &pre($val, $attr = array()) {
         return $this->tag('pre', $attr, $val);
@@ -88,11 +139,31 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('fieldset', $attr, '', true);
     }
 
-    public function &input($name, $type, $attr = array()) {
+    public function &legend($text, $attr = array()) {
+        return $this->tag('legend', $attr, $text);
+    }
+
+    public function &label($text, $for = '', $attr = array()) {
+        if(!empty($for)) {
+            $attr['for'] = $for;
+        }
+        return $this->tag('label', $attr, $text);
+    }
+
+    /**
+     * New and improved input function.
+     *
+     * @param string    $type is an html form type string.
+     * @param mixed     $attr can be a name or an array of attributes.
+     * @return object
+     */
+    public function &input($type, $attr = array()) {
+        if(is_string($attr)) {
+            $attr = array('name' => $attr);
+        }
         if(!is_array($attr)) {
             throw new InvalidParameterTypeException($attr);
         }
-        $attr['name'] = $name;
         $attr['type'] = $type;
         return $this->tag('input', $attr);
     }
@@ -112,6 +183,44 @@ class HtmlBuilder extends XmlBuilder{
     public function &td($text, $attr = array()) {
         return $this->tag('td', $attr, $text);
     }
+
+    public function &ol($attr = array()) {
+        return $this->tag('ol', $attr, '', true);
+    }
+
+    public function &ul($attr = array()) {
+        return $this->tag('ul', $attr, '', true);
+    }
+
+    /**
+     * li() is a little different than the average html method. If text is exactly false 
+     * (which is the default,) the HTMLBuilder pointer will be moved into the 
+     * tag. If text is a string, it will make the tag without stepping into it.
+     *
+     * @param mixed     $text has been explained above.
+     * @return object
+     */
+    public function &li($text=false, $attr = array()) {
+        if($text === false) {
+            return $this->tag('li', $attr, '', true);
+        }
+        return $this->tag('li', $attr, $text);
+    }
+
+    public function &link($attr) {
+        return $this->tag('link', $attr);
+    }
+
+    public function &link_style($url) {
+        $attr = array(
+            'href' => $url,
+            'rel' => 'stylesheet',
+            'type' => 'text/css',
+            'media' => 'screen'
+        );
+        return $this->link($attr);
+    }
+
 }
 
 // Add any Html tag specific things here.

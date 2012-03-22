@@ -23,7 +23,8 @@ class View {
      * 
      * @param string    $name is the path to the view with or without .php
      * @param string    $vars are the vars to pass to the view script.
-     * @return bool     Success?
+     * @return mixed    A view can specify a return value by setting it in the 
+     *                  view class.
      */
     public static function load($name, $vars = array()) {
         // If !ends with php, then add it.
@@ -33,13 +34,44 @@ class View {
             throw new Exception("View file missing: {$name}");
         }
         self::_process($name, $vars);
+        if($r = self::get_last_return()) {
+            return $r;
+        }
+        return true;
     }
 
     private static function _process($_file, $_vars = array()) {
-        foreach($_vars as $_key => $_v) {
-            $$_key = $_v;
-        }
-        include($_file);
+        // These globals don't live long.
+        global $PAGE, $FILE;
+        $PAGE = $_vars;
+        $FILE = $_file;
+
+        // This file resides in the global namespace so we can put these 
+        // variables in that scope. It's an added step but that is what we get 
+        // for using namespaces.
+        include(dirname(__FILE__) . '/page.php');
         return true;
     }
+
+    /**
+     * View return subsystem.
+     */
+    private static $last_return_value = null;
+
+    /**
+     * Returns the last return value and clears the buffer.
+     */
+    public static function get_last_return() {
+        $i = self::$last_return_value;
+        self::$last_return_value = null;
+        return $i;
+    }
+
+    public static function set_return($anything) {
+        self::$last_return_value = $anything;
+    }
+
+    /**
+     * End view return subsystem.
+     */
 }

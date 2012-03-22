@@ -1,0 +1,5 @@
+Plum needs language strings as well, but they will be segregated from the
+application's language files.
+
+These will be provided in American English until someone else decides to port
+them to another language.
