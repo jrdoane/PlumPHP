@@ -51,7 +51,7 @@ class HTTP {
         if(!empty($input)) {
             return self::clean($input, $type);
         }
-        return false;
+        return null;
     }
 
     public static function clean($data, $param) {

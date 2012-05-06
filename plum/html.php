@@ -60,6 +60,10 @@ class HtmlBuilder extends XmlBuilder{
         return $this->raw('script', array(), $js, false);
     }
 
+    public function &meta($attr = array()) {
+        return $this->tag('meta', $attr, null, false);
+    }
+
     /**
      * Simple title wrapper for the title tag. It takes a string or no string, 
      * and will do some string magic if you would like the site name in the 
