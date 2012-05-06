@@ -1,6 +1,7 @@
 <?php
 
 $wwwroot = \Plum\Config::get('wwwroot', 'web');
+$mceroot = "$wwwroot/js/tinymce";
 $html = new \Plum\HtmlBuilder('head');
 $html->script_src("{$wwwroot}/js/tinymce/tiny_mce.js");
 $tinymce_conf = <<<EOF
@@ -18,16 +19,13 @@ $tinymce_conf = <<<EOF
         theme_advanced_toolbar_location : "top",
         theme_advanced_toolbar_align : "left",
         theme_advanced_statusbar_location : "bottom",
-        theme_advanced_resizing : true,
-
-        // Example content CSS (should be your site CSS)
-        content_css : "css/content.css",
+        theme_advanced_resizing : false,
 
         // Drop lists for link/image/media/template dialogs
-        template_external_list_url : "lists/template_list.js",
-        external_link_list_url : "lists/link_list.js",
-        external_image_list_url : "lists/image_list.js",
-        media_external_list_url : "lists/media_list.js",
+        template_external_list_url : "{$mceroot}/lists/template_list.js",
+        external_link_list_url : "{$mceroot}/lists/link_list.js",
+        external_image_list_url : "{$mceroot}/lists/image_list.js",
+        media_external_list_url : "{$mceroot}/lists/media_list.js",
     });
 EOF;
 $html->script_str($tinymce_conf);

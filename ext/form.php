@@ -70,9 +70,14 @@ abstract class Form {
         foreach($this->_fields as $field) {
             if(!empty($field->_attributes) & !empty($field->_attributes['name'])) {
                 $name = $field->_attributes['name'];
-                $output[$name] = HTTP::input($name);
+                $input = HTTP::input($name);
+                if(isset($input)) {
+                    $output[$name] = $input;
+                }
             }
         }
+
+        return $output;
     }
 
     public function get_valid_data() {
@@ -128,9 +133,20 @@ abstract class Form {
         if(!empty($attr['name'])) {
             $name = $attr['name'];
             $this->_fields[$name] =& $node;
+        } else {
+            $attr['name'] = '';
         }
+
+        $this->_html->div(array('class' => 'form_row'));
+        if(strlen($label_text) != 0) {
+            $this->_html->label($label_text, $attr['name']);
+        }
+
         $this->_html->add_child($node);
-        if($nowrap or $html_name == 'hidden') {
+
+        $this->_html->step_out('fieldset');
+
+        if(!$nowrap and $html_name != 'hidden') {
             $this->_html->br();
         }
     }
@@ -152,6 +168,10 @@ abstract class Form {
 
     public function get_builder() {
         return $this->_html;
+    }
+
+    public function get_html() {
+        return $this->_html->get_string();
     }
 
     public static function all_rules() {

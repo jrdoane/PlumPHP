@@ -24,7 +24,7 @@ class LogicException extends Exception {}
 // Primary exceptions
 class ParameterException extends \Plum\Exception {
     public function __construct($param=null) {
-        parent::__construct(var_export($param, true));
+        parent::__construct(var_export($param, true) . var_export(debug_backtrace(), true));
     }
 }
 

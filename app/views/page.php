@@ -11,6 +11,7 @@ $html = new \Plum\HtmlBuilder();
 
 // TODO: Re-add this when we actually need it.
 $html->head();
+$html->meta(array('charset' => 'UTF-8'));
 $html->title();
 if(empty($page->styles)) {
     $page->styles = array('basic');
