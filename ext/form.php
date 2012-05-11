@@ -77,7 +77,11 @@ abstract class Form {
             }
         }
 
-        return $output;
+        if(count($output) == 0) {
+            return false;
+        }
+
+        return (object)$output;
     }
 
     public function get_valid_data() {
@@ -95,20 +99,20 @@ abstract class Form {
         foreach($this->_validation as $name => $rule) {
             switch($rule->type) {
             case \Plum\FORM_RULE_REQUIRED:
-                if(empty($data[$name])) {
+                if(empty($data->$name)) {
                     return false;
                 }
                 break;
             case \Plum\FORM_RULE_NUMERIC:
-                if(empty($data[$name])) {
+                if(empty($data->$name)) {
                     return false;
                 }
-                if(!is_numeric($data[$name])) {
+                if(!is_numeric($data->$name)) {
                     return false;
                 }
                 break;
             case \Plum\FORM_REGEX:
-                if(!preg_match($rule->rule, $data[$name])) {
+                if(!preg_match($rule->rule, $data->$name)) {
                     return false;
                 }
                 break;

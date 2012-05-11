@@ -17,5 +17,13 @@
  */
 
 function fullname($user) {
+    if(is_numeric($user)) {
+        $user = get_user($user);
+    }
     return $user->firstname . ' ' . $user->lastname;
+}
+
+function get_user($user_id) {
+    $db = \Plum\DB::get_conn();
+    return $db->select('user', array('user_id' => $user_id), 1);
 }

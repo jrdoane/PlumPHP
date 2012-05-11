@@ -17,6 +17,7 @@
  */
 
 require_once(dirname(dirname(__FILE__)) . '/libs/hardware.php');
+require_once(dirname(dirname(__FILE__)) . '/libs/lib.php');
 
 class Hardware extends \Plum\Controller {
     protected $_page;
@@ -46,15 +47,28 @@ class Hardware extends \Plum\Controller {
         \Plum\View::load('page', array('page' => $page));
     }
 
-    public function add() {
+    public function additem() {
         // We could have submitted already, lets check!
         $form = new HardwareForm(
-            \Plum\Uri::href('hardware/add'), 'POST',
+            \Plum\Uri::href('hardware/additem'), 'POST',
             \Plum\Lang::get('addhardware', 'hardware')
         );
 
         if($data = $form->get_valid_data()) {
-            var_dump($data);
+            $user = \Plum\Auth::get_current_user();
+            $row = (object)array(
+                'name' => $data->name,
+                'serial_number' => $data->serialnumber,
+                'id_number' => $data->idnumber,
+                'notes' => $data->notes,
+                'created_by' => $user->user_id,
+                'modified_by' => $user->user_id,
+                'time_created' => time(),
+                'time_modified' => time()
+            );
+            $db = \Plum\DB::get_conn();
+            $db->insert('hardware', $row);
+            \Plum\HTTP::redirect(\Plum\Uri::href('hardware/manageitems'));
         }
 
         // Start making the page.
@@ -97,14 +111,16 @@ class Hardware extends \Plum\Controller {
         if($records) {
             // Records found.
             $content->table()
-                ->tr()
+                ->tr(array('class' => 'head'))
                 ->th(\Plum\Lang::get('hardwarename', 'hardware'))
                 ->th(\Plum\Lang::get('serialnumber', 'hardware'))
                 ->th(\Plum\Lang::get('idnumber', 'hardware'))
                 ->step_out('table');
             foreach($records as $rec) {
-                $content->tr()
-                    ->td($rec->name)
+                $content->tr(array('class' => 'item'))
+                    ->td()
+                    ->a($rec->name, \Plum\Uri::href("hardware/viewitem/{$rec->hardware_id}"))
+                    ->step_out('tr')
                     ->td($rec->serial_number)
                     ->td($rec->id_number)
                     ->step_out('table');
@@ -119,6 +135,53 @@ class Hardware extends \Plum\Controller {
         $page->body = \Plum\View::load(
             'onecolumn', array(
                 'content' => $content,
+                'column' => $column
+            )
+        );
+
+        \Plum\View::load('page', array('page' => $page));
+    }
+
+    public function viewitem($item_id) {
+        $page =& $this->_page;
+        $page->breadcrumbs[] = array(
+            'text' => \Plum\Lang::get('managehardware', 'hardware'),
+            'url' => \Plum\Uri::href('hardware/manageitems')
+        );
+        $page->breadcrumbs[] = array(
+            'text' => \Plum\Lang::get('hardwaredescription', 'hardware')
+        );
+        $db = \Plum\DB::get_conn();
+        $rec = $db->select('hardware', array('hardware_id' => $item_id), 1);
+
+        $html = new \Plum\HtmlBuilder();
+        if(!$rec) {
+            // No record found.
+        } else {
+            $html->table()
+                ->tr()
+                ->th(\Plum\Lang::get('hardwarename', 'hardware'))
+                ->td($rec->name)
+                ->step_out('table')
+                ->tr()
+                ->th(\Plum\Lang::get('addedby', 'hardware'))
+                ->td(fullname($rec->created_by))
+                ->step_out('table')
+                ->tr()
+                ->th(\Plum\Lang::get('serialnumber', 'hardware'))
+                ->td($rec->serial_number)
+                ->step_out('table')
+                ->tr()
+                ->th(\Plum\Lang::get('idnumber', 'hardware'))
+                ->td($rec->id_number)
+                ->step_out('table');
+            // Lets display the ticket.
+        }
+
+        $column = \Plum\View::load('hardware/navigation');
+        $page->body = \Plum\View::load(
+            'onecolumn', array(
+                'content' => $html,
                 'column' => $column
             )
         );
