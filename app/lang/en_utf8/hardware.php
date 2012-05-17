@@ -11,3 +11,7 @@ $string['savehardware'] = 'Save hardware';
 $string['hardwaremanager'] = 'Hardware manager';
 $string['idnumber'] = 'ID Number';
 $string['nohardwaretodisplay'] = 'No hardware to display';
+$string['hardwaredescription'] = 'Hardware description';
+$string['addedby'] = 'Added by';
+$string['lastupdatedby'] = 'Last updated by';
+

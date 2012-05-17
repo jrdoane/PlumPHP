@@ -123,6 +123,21 @@ abstract class Form {
         return true;
     }
 
+    /**
+     * Set the value attribute on any html form item that has been added.
+     *
+     * @param string    $itemname is a form item with a 'name' attribute.
+     * @param string    $value is a value to store in this field.
+     * @return null
+     */
+    public function set($itemname, $value) {
+        if(!isset($this->_fields[$itemname])) {
+            throw new Exception('Unable to set value on a form item that does not exist.');
+        }
+
+        $this->_field[$itemname]->set_attribute('value' => $value);
+    }
+
     public function add($html_name, $attr, $label_text='', $nowrap=false) {
         if(empty($attr) & is_array($attr)) {
             new Exception();
@@ -155,7 +170,15 @@ abstract class Form {
         }
     }
 
-    public function add_rule($name, $type, $rule) {
+    /**
+     * Add a requirement to the form to determine when a submitted form is 
+     * valid to be accepted as submitted.
+     *
+     * @param string    $name is a form item name.
+     * @param string    $type is a type of rule, see constants.
+     * @param string    $rule is a rule string that defines the rule.
+     */
+    public function add_rule($name, $type, $rule=null) {
         $rule_obj = (object)array(
             'type' => $type,
             'rule' => $rule
@@ -170,10 +193,20 @@ abstract class Form {
         $v[] = $rule_obj;
     }
 
+    /**
+     * Returns the HTMLBuilder object that represents the form.
+     *
+     * @return \Plum\HTMLBuilder
+     */
     public function get_builder() {
         return $this->_html;
     }
 
+    /**
+     * Returns the HTML code for this form.
+     *
+     * @return string
+     */
     public function get_html() {
         return $this->_html->get_string();
     }
