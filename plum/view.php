@@ -18,18 +18,20 @@
 namespace Plum;
 
 class View {
+
     /**
      * Displays a standard view from the $name and $vars.
      * 
      * @param string    $name is the path to the view with or without .php
      * @param string    $vars are the vars to pass to the view script.
+     * @param bool      $template will subsitute string variables in bracketed 
+     *                  named variables in the template file.
      * @return mixed    A view can specify a return value by setting it in the 
      *                  view class.
      */
     public static function load($name, $vars = array()) {
         // If !ends with php, then add it.
-        $name = Config::app_root() . "/views/{$name}";
-        $name .= preg_match('/.php$/', $name) ? '' : '.php';
+        $name = self::_view_path($name);
         if(!file_exists($name)) {
             throw new Exception("View file missing: {$name}");
         }
@@ -38,6 +40,28 @@ class View {
             return $r;
         }
         return true;
+    }
+
+    public static function template($name, $vars = array(), $return=true) {
+        $name = self::_view_path($name);
+        if(!file_exists($name)) {
+            throw new Exception("View file missing: {$name}");
+        }
+        $text = file_get_contents($name);
+        foreach($vars as $varname => $value) {
+            $text = preg_replace("/\{{$varname}\}/", $value, $text);
+        }
+
+        if($return) {
+            return $text;
+        }
+        print $text;
+    }
+
+    private static function _view_path($name) {
+        $name = Config::app_root() . "/views/{$name}";
+        $name .= preg_match('/.php$/', $name) ? '' : '.php';
+        return $name;
     }
 
     private static function _process($_file, $_vars = array()) {
