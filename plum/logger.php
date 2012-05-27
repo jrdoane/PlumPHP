@@ -37,9 +37,6 @@ class Logger {
     public static function warning($message, $data) {
     }
 
-    public static function error($message, $data) {
-    }
-
     public static function trace() {
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $stack_strings = array();

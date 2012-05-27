@@ -44,7 +44,7 @@ class DB {
             $fqn = "\\Plum\\DB\\{$server['dbtype']}\\Connection";
             $connection = new $fqn($server);
             $server['connection'] = $connection;
-            if($server['default'] or empty(self::$default)){
+            if($server['default']){
                 self::$default = $server;
             }
             self::$connections[$config_name] = $server;

@@ -43,7 +43,12 @@ class Session {
 
         if(self::$_use_database == true) {
             // Grab data from the database.
-            $session = $conn->select('session', array('sessid' => session_id()), 1);
+            $id = self::current_id();
+            if(!$id) {
+                // No id? Use a fake one!
+                $id = self::generate_id();
+            }
+            $session = $conn->select('session', array('sessid' => $id), 1);
             $stimeout = Config::get('session_timeout', 'web');
 
             if(self::validate_session($session)) {
@@ -58,7 +63,7 @@ class Session {
                 self::$_stored_session = $session;
             } else {
                 if(!empty($session)) {
-                    $conn->delete('session', array('sessid' => session_id()));
+                    $conn->delete('session', array('sessid' => $id));
                 }
                 self::$_session = array();
                 self::$_stored_session = false;
@@ -134,12 +139,32 @@ class Session {
      * Invalidates the session and creates a new one.
      */
     public static function reset() {
-        $oldsessid = session_id();
+        $oldsessid = self::current_id();
         $conn = DB::get_conn();
         $conn->delete('session', array('sessid' => $oldsessid));
+        self::current_id(true);
         self::$_session = array();
         self::$_stored_session = false;
-        session_regenerate_id(true);
+    }
+
+    public static function generate_id() {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+        $new_id = '';
+        for($i = 0; $i < 128; $i++) {
+            $new_id .= $chars[rand(0,strlen($chars)-1)];
+        }
+        return $new_id;
+    }
+
+    public static function current_id($regenerate_id=false) {
+        $cname = Config::get('cookie_session_name', 'web');
+        if(isset($_COOKIE[$cname])) {
+            return $_COOKIE[$cname];
+        }
+        $id = self::generate_id();
+        setcookie($cname, $id, 0, '/', Config::get('cookie_domain', 'web'));
+        $_COOKIE[$cname] = $id;
+        return $id;
     }
 
     public static function shutdown() {
@@ -153,11 +178,14 @@ class Session {
                 $so = get_object_vars($so);
             }
         }
+
         self::$_session['obj_names'] = $objs;
         $db = DB::get_conn();
         if(empty(self::$_stored_session)) {
+            $sessid = self::current_id();
+
             $session = (object)array(
-                'sessid' => session_id(),
+                'sessid' => $sessid,
                 'ip' => $_SERVER['REMOTE_ADDR'],
                 'agent' => $_SERVER['HTTP_USER_AGENT'],
                 'data' => json_encode(self::$_session),
@@ -168,7 +196,7 @@ class Session {
         } else {
             // TODO: Add config checks for agent and ip.
             $where = array(
-                'sessid' => session_id()
+                'sessid' => self::current_id()
             );
             $session = (object)array(
                 'data' => json_encode(self::$_session),
