@@ -135,7 +135,7 @@ abstract class Form {
             throw new Exception('Unable to set value on a form item that does not exist.');
         }
 
-        $this->_field[$itemname]->set_attribute('value' => $value);
+        $this->_field[$itemname]->set_attribute('value', $value);
     }
 
     public function add($html_name, $attr, $label_text='', $nowrap=false) {
