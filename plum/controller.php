@@ -54,8 +54,8 @@ abstract class Controller {
             throw new MissingParameterException($name);
         }
         $name = strtolower($name);
-        $cprefix = Config::get('controller_prefix', 'system');
-        $csuffix = Config::get('controller_suffix', 'system');
+        $cprefix = Config::get('controller_class_prefix', 'system');
+        $csuffix = Config::get('controller_class_suffix', 'system');
         $appdirname = Config::get('application_dir', 'system');
         $controllerdirname = Config::get('controller_dir', 'system');
         $dir = dirname(dirname(__FILE__)) . "/{$appdirname}/{$controllerdirname}";

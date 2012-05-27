@@ -20,11 +20,18 @@ namespace Plum;
 class Config {
     private static $_cfg; // Contains all config data parsed in at init.
     private static $_default_module = 'web';
+
     /**
      * Gets a configuration item. Module refers to the name of the config file.
-     * TODO: Take in an array for an id to traverse an array in the config.
+     * 
+     * @param $id is the id of the config option you're looking to get.
+     * @param $module is the module to get a config option for.
+     * @param $nullreturn if null will throw an exception when there is no 
+     * config option. Otherwise it returns the value of this var. So this will 
+     * never return null, false is the closest you can get.
+     * @return mixed
      */
-    public static function get($id, $module = null) {
+    public static function get($id, $module = null, $nullreturn = null) {
         if($module == null) {
             $module = self::$_default_module;
         }
@@ -33,7 +40,10 @@ class Config {
         }
         $mdata = self::$_cfg->$module;
         if(!isset($mdata[$id])) {
-            return false;
+            if(!isset($nullreturn)) {
+                throw new Exception("Config option ($id) in module ($module) does not exist.");
+            }
+            return $nullreturn;
         }
         return $mdata[$id];
     }
