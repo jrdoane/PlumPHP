@@ -22,6 +22,7 @@ class Xml {
         $out = "<$name";
         if(!empty($attributes)) {
             foreach($attributes as $n => $v) {
+                $v = htmlspecialchars($v);
                 $out .= " {$n}=\"{$v}\"";
             }
         }
@@ -342,6 +343,21 @@ class XmlNode {
     * @return array
      */
     public function get_attributes() { return $this->_attributes; }
+
+    /**
+     * Sets a value to an attributes on this html node.
+     *
+     * @param string    $attribute_name is exactly how it sounds in relation to 
+     *                  an html node.
+     * @param mixed     $value is a value to put in this attribute.
+     * @return null
+     */
+    public function set_attribute($attribute_name, $value) {
+        if($value === null) {
+            unset($this->attribute[$attribute_name]);
+        }
+        $this->attributes[$attribute_name] = $value;
+    }
 
     /**
      * Gets the contents of the current HTML flag (excluding explicit HTML 
