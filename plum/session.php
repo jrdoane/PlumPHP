@@ -101,12 +101,19 @@ class Session {
         return true;
     }
 
-    // TODO
-    public static function clean_sessions() {
-    }
-
-    // TODO
+    /**
+     * Delete all old sessions from the database.
+     */
     public static function purge_sessions() {
+        if(self::$_use_database == false) {
+            return;
+        }
+        $timeout = Config::get('session_timeout', 'web');
+        return $db->sql("
+            DELETE FROM {sessions}
+            WHERE time_modified < ?
+            ", array(time() - $timeout)
+        );
     }
 
     /**

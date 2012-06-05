@@ -23,7 +23,6 @@ use \Plum\DB\Table as TableShell;
 use \Plum\Exception as Exception;
 
 class Connection extends ConnectionShell {
-    private $_prefix;
     public function connect(
         $user, $password, $database, $server = 'localhost',
         $port = 5432, $persistant = false, $prefix = ''
@@ -42,10 +41,24 @@ class Connection extends ConnectionShell {
      * output accordingly.
      *
      * @param string    $sql is a sql query.
+     * @param bool      $rs determines if a simple or complex result is returned.
+     * @param bool      $tablebrace will replace table names in curly braces 
+     *                  with the table prefix prepended.
      * @return \Plum\DB\Result
      */
-    public function sql($sql, $rs=false) {
-        $result = pg_query($this->_connection, $sql);
+    public function sql($sql, $params = array(), $rs=false) {
+        $sql = $this->apply_table_prefix($sql);
+        $sql = $this->apply_sql_parameters($sql, $params);
+
+        if(is_object($params)) {
+            $params = get_class_vars($params);
+        }
+
+        if(empty($params)) {
+            $result = pg_query($this->_connection, $sql);
+        } else {
+            $result = pg_query_params($this->_connection, $sql, $params);
+        }
         if($result == false) {
             $error = pg_last_error();
             if(!$error) {
@@ -66,6 +79,18 @@ class Connection extends ConnectionShell {
         return $result;
     }
 
+    /**
+     */
+    public function select_sql($sql, $params = array(), $limit=0, $offset=0, $rs=false) {
+        if($limit) {
+            $sql .= " LIMIT $limit";
+        }
+        if($offset) {
+            $sql .= " OFFSET $offset";
+        }
+        return $this->sql($sql, $params, $rs);
+    }
+
     public function table_identifier() {
         return '"';
     }
@@ -77,11 +102,6 @@ class Connection extends ConnectionShell {
         return "'".pg_escape_string($var)."'";
     }
 
-    private function prep_table_name($table) {
-        $i = $this->table_identifier();
-        return $i.$this->_prefix.$table.$i;
-    }
-
     public function insert($table, $data, $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
         if(empty($data)) {
@@ -91,10 +111,13 @@ class Connection extends ConnectionShell {
         $cp = array();
         $row = array();
         $insert_info = $this->build_values($data);
-        $sql .= '(' . implode(', ', $insert_info->fields) . ")\nVALUES\n";
-        $sql .= implode(",\n", $insert_info->data);
+        $sql .= '(' . implode(', ', $insert_info->fields) . ")\n";
+        $sql .= $this->build_value_params($insert_info->fields);
 
-        return $this->sql($sql, $rs);
+        if(is_object($data)) {
+            $data = (array)$data;
+        }
+        return $this->sql($sql, $data, $rs);
     }
 
     private function build_values($array, $obj=null) {
@@ -120,7 +143,8 @@ class Connection extends ConnectionShell {
             $obj->fields = $fields;
         }
         if(!empty($row)) {
-            $obj->data[] = '(' . implode(', ', $row) . ')';
+            $obj->data[] = $this->build_value_params($row);
+            //$obj->data[] = '(' . implode(', ', $row) . ')';
         }
 
         return $obj;
@@ -129,23 +153,18 @@ class Connection extends ConnectionShell {
     public function delete($table, $where=array(), $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
         $i = $this->table_identifier();
-        $sql = "DELETE FROM $table\n";
+        $sql = "DELETE FROM {$i}$table{$i}\n";
         if(!empty($where)) {
             if(!is_array($where)) {
                 throw new \Plum\ArrayExpectedException($where);
             }
-            $sql .= "WHERE ";
-            $where_array = array();
-            foreach($where as $field => &$value) {
-                $value = $this->process_input($value);
-                $where_array[] = "{$i}$field{$i} = $value";
-            }
-            $sql .= implode(' AND ', $where_array);
+            $sql .= $this->build_where($where);
         }
+
         if($return) {
             $sql .= "\nRETURNING *";
         }
-        return $this->sql($sql, $rs);
+        return $this->sql($sql, $where, $rs);
 
     }
 
@@ -159,11 +178,8 @@ class Connection extends ConnectionShell {
         if(!empty($sort)) {
             $sql .= " ORDER BY $sort\n";
         }
-        if($limit != 0) {
-            $sql .= " LIMIT {$limit} OFFSET {$offset}";
-        }
 
-        $result = $this->sql($sql, true);
+        $result = $this->select_sql($sql, $where, $limit, $offset, true);
         if(!$rs) {
             return $result->simplify(true, $limit);
         }
@@ -184,7 +200,10 @@ class Connection extends ConnectionShell {
         $sql .= implode(', ', $set);
         $sql .= ' ' . $this->build_where($where);
 
-        return $this->sql($sql, $rs);
+        if($return) {
+            $sql .= "\nRETURNING *";
+        }
+        return $this->sql($sql, $where, $rs);
     }
 
     private function build_where($where = array()) {
@@ -196,7 +215,7 @@ class Connection extends ConnectionShell {
             if($value === null) {
                 $tmpsql .= 'IS NULL ';
             } else {
-                $tmpsql .= ' = ' . $this->process_input($value);
+                $tmpsql .= ' = ?';
             }
             $where_sql[] = $tmpsql;
         }
@@ -346,6 +365,3 @@ class Result extends ResultShell {
 
 }
 
-class Table {
-
-}
