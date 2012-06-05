@@ -25,6 +25,8 @@ class Welcome extends \Plum\Controller {
     public function index() {
         $page = new stdClass;
         $page->breadcrumbs = array();
+        
+        $db = \Plum\DB::get_conn();
         \Plum\View::load('page', array('page' => $page));
     }
 }
