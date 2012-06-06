@@ -122,10 +122,10 @@ class Auth {
             JOIN {$prefix}role AS r USING (role_id)
             LEFT JOIN {$prefix}role_privilege AS rp USING (role_id)
             LEFT JOIN {$prefix}privilege AS p USING (privilege_id)
-            WHERE u.user_id = {$user} AND
-            (r.super_user = 1 OR p.name = '{$privilege}')
+            WHERE u.user_id = ? AND
+            (r.super_user = ? OR p.name = ?)
             ";
-        $result = $db->sql($sql, true);
+        $result = $db->sql($sql, array($user, '1', $privilege), true);
         if($result->has_next()) {
             return true;
         }

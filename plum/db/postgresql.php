@@ -152,8 +152,7 @@ class Connection extends ConnectionShell {
 
     public function delete($table, $where=array(), $return=false, $rs=false) {
         $table = $this->prep_table_name($table);
-        $i = $this->table_identifier();
-        $sql = "DELETE FROM {$i}$table{$i}\n";
+        $sql = "DELETE FROM $table\n";
         if(!empty($where)) {
             if(!is_array($where)) {
                 throw new \Plum\ArrayExpectedException($where);
@@ -305,17 +304,27 @@ class Result extends ResultShell {
         return pg_fetch_assoc($this->_result);
     }
 
-    public function get_all_assoc() {
+    public function get_all_assoc($skipkey=false) {
         if(!$this->count_rows_returned()) {
             return false;
         }
-        return pg_fetch_all($this->_result);
+        $recs = pg_fetch_all($this->_result);
+        if($skipkey) {
+            return $recs;
+        }
+        $output = array();
+        foreach($recs as $rec) {
+            reset($rec);
+            $output[$rec[key($rec)]] = $rec;
+        }
+        return $output;
     }
 
     public function get_all_obj() {
         $objects = array();
-        foreach($this->get_all_assoc() as $row) {
-            $objects[] = (object)$row;
+        foreach($this->get_all_assoc(true) as $row) {
+            reset($row);
+            $objects[$row[key($row)]] = (object)$row;
         }
         return $objects;
     }

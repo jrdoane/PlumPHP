@@ -108,6 +108,7 @@ if(!empty($page->body)) {
         if(\Plum\HtmlBuilder::is_builder($page->body)) {
             $html->merge_builders($page->body);
         } else {
+            $html->tag('div', array(), $page->body);
             // TODO: Handle it.
         }
     }
