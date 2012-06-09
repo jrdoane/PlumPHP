@@ -60,7 +60,7 @@ class View {
 
     private static function _view_path($name) {
         $name = Config::app_root() . "/views/{$name}";
-        $name .= preg_match('/.php$/', $name) ? '' : '.php';
+        $name .= preg_match('/.php$|.html$/', $name) ? '' : '.php';
         return $name;
     }
 
