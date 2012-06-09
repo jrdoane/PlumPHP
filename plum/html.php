@@ -46,6 +46,7 @@ class Html extends Xml {
 class HtmlBuilder extends XmlBuilder{
     public function __construct($name = 'html', $attr = array(), $value = '') {
         parent::__construct($name, $attr, $value);
+        $this->set_declaration(\Plum\HTML::doctype());
     }
 
     public function &head() {
