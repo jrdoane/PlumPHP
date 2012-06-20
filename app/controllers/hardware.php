@@ -174,6 +174,10 @@ class Hardware extends \Plum\Controller {
                 ->tr()
                 ->th(\Plum\Lang::get('idnumber', 'hardware'))
                 ->td($rec->id_number)
+                ->step_out('table')
+                ->tr()
+                ->th(\Plum\Lang::get('notes', 'hardware'))
+                ->raw('td', array(), $rec->notes)
                 ->step_out('table');
             // Lets display the ticket.
         }
