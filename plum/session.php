@@ -41,6 +41,9 @@ class Session {
         // Use cookie sessions if there is no database.
         self::$_use_database = Config::get('dbsession', 'web');
 
+        // This must run after use_database is set.
+        self::purge_sessions();
+
         if(self::$_use_database == true) {
             // Grab data from the database.
             $id = self::current_id();
@@ -105,14 +108,15 @@ class Session {
      * Delete all old sessions from the database.
      */
     public static function purge_sessions() {
+        $db = DB::get_conn();
         if(self::$_use_database == false) {
             return;
         }
         $timeout = Config::get('session_timeout', 'web');
         return $db->sql("
-            DELETE FROM {sessions}
-            WHERE time_modified < ?
-            ", array(time() - $timeout)
+            DELETE FROM {session}
+            WHERE ((time_modified + {$timeout}) < ? )
+            ", array(time())
         );
     }
 

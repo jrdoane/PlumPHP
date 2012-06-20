@@ -266,16 +266,9 @@ class XmlBuilder {
         return $out;
     }
 
-    public function set_declaration($str) {
-        $this->_declaration = $str;
-    }
-
     // TODO: Make this check parent claseses for these two.
     public static function is_builder($b) {
         if(empty($b)) {
-            return false;
-        }
-        if(!is_object($b)) {
             return false;
         }
         $classes = array(
