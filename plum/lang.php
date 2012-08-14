@@ -36,6 +36,9 @@ class Lang {
     }
 
     public static function load($path) {
+	if(!is_dir($path)) {
+            return;
+	}
         $files = scandir($path);
         foreach($files as $f) {
             if($f == '.' or $f == '..' or !preg_match('/.php$/', $f)) {
