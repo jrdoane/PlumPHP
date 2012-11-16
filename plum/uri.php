@@ -31,18 +31,34 @@ class Uri {
         return Config::get('wwwroot', 'web');
     }
 
+    /**
+     * Gets the current URI. If there is no path info, we need to return null 
+     * because it is very possible that this is being run as a CLI script.
+     * 
+     * @param bool      $full will return the full web address.
+     * @return mixed
+     */
     public static function current_uri($full = false) {
-        $root = Config::get('wwwroot', 'web');
+        $root = self::base();
         $file = Config::get('wwwfile', 'web');
         if($full) {
             if(!isset($_SERVER['PATH_INFO'])) {
-                return "{$root}{$file}";
+                return null;
             }
-            $full = "{$root}{$file}{$_SERVER['PATH_INFO']}";
+            $pi = preg_replace('/^\//', '', $_SERVER['PATH_INFO']);
+            if(!empty($_GET)) {
+                $pi .= "?";
+                $gets = array();
+                foreach($_GET as $key => $get) {
+                    $gets[] = $key . '=' . urlencode($get);
+                }
+                $pi .= implode('&', $gets);
+            }
+            $full = "{$root}{$file}{$pi}";
             return $full;
         }
         if(!isset($_SERVER['PATH_INFO'])) {
-            return '';
+            return null;
         }
         return $_SERVER['PATH_INFO'];
     }

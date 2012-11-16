@@ -147,6 +147,19 @@ class Session {
     }
 
     /**
+     * Removes a session variable.
+     *
+     * @param string    $name is the session var name.
+     * @return null
+     */
+    public static function nullify($name) {
+        if(isset(self::$_session[$name])) {
+            self::$_dirty = true;
+            unset(self::$_session[$name]);
+        }
+    }
+
+    /**
      * Invalidates the session and creates a new one.
      */
     public static function reset() {

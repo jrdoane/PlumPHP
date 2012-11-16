@@ -24,19 +24,20 @@ namespace Plum;
  * information to the database before the database module has been loaded.
  */
 class Logger {
-    static protected $db_backlog;
-
     /**
-     * Logger will contain various methods that relate to a specific log level. 
-     * This way if the logger is configured to ignore developer log calls but 
-     * not warnings, then it should handle it as such.
+     * Log stuff to the PHP log.
      */
-    public static function debug($message, $data) {
+    public static function log_action($module, $desc, $data='') {
+        $log = '['.date("c").'] '. $module . ': '.$desc;
+        if(!empty($data)) {
+            $log .= "\n".$data;
+        }
+        error_log($log);
     }
-
-    public static function warning($message, $data) {
-    }
-
+    /**
+     * Writes data to the log.
+     * Configuration dependant - PHP logging or a database table?
+     */
     public static function trace() {
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $stack_strings = array();
