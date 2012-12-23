@@ -25,10 +25,10 @@ $config['servers'] = array(
         'dbtype' => 'PostgreSQL',
         'server' => 'localhost',
         'port' => '5432',
-        'username' => 'test',
-        'password' => 'lkj123',
-        'database' => 'plumphp_test',
-        'prefix' => 'portal_',
+        'username' => 'user',
+        'password' => 'password',
+        'database' => 'database',
+        'prefix' => '',
         'persistant' => true,
         'default' => true
     )
