@@ -2,8 +2,8 @@ PlumPHP
 
 Created by Jonathan Doane. <jrdoane@gmail.com>
 
-String version: 1.0.0
-Numerical Version: 20111211.00
+String version: 1.0.1
+Numerical Version: 20121223.00
 
 PlumPHP is a PHP framework that utilizes PHP 5.3 and PostgreSQL functionality.
 Using these two technologies and deeply integrating them, the hope is to create
