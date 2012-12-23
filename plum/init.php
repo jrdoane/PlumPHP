@@ -100,6 +100,14 @@ class Init {
             }
         }
     }
+
+    public static function get_load_time() {
+        $t_all = 0;
+        foreach(self::$_load_times as $module => $time) {
+            $t_all += $time;
+        }
+        return $t_all;
+    }
 }
 
 // Starts up Plum. (These are primary class names, file names should be lower case.
@@ -121,7 +129,6 @@ Init::core('stdClass');
  */
 Init::core('Debug');
 Init::core('Config');
-Init::core('Lang');
 Init::core('DB');
 Init::core('DB\PostgreSQL');
 /**
