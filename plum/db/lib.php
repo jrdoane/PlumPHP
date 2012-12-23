@@ -74,6 +74,8 @@ abstract class Connection {
      */
     abstract public function sql($sql, $params = array(), $rs=false);
     abstract public function select_sql($sql, $params = array(), $limit=0, $offset=0, $rs=false);
+    abstract public function select_count($table, $where);
+    abstract public function select_count_sql($sql, $params = array());
 
     /**
      * SQL wrappers for basic sql commands.

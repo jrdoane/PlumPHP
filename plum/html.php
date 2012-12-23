@@ -46,6 +46,7 @@ class Html extends Xml {
 class HtmlBuilder extends XmlBuilder{
     public function __construct($name = 'html', $attr = array(), $value = '') {
         parent::__construct($name, $attr, $value);
+        $this->set_declaration(\Plum\HTML::doctype());
     }
 
     public function &head() {
@@ -113,6 +114,13 @@ class HtmlBuilder extends XmlBuilder{
 
     public function &p($val, $attr = array()) {
         return $this->tag('p', $attr, $val);
+    }
+
+    public function &img($attr) {
+        if (is_string($attr)) {
+            $attr = array('src' => $attr);
+        }
+        return $this->tag('img', $attr);
     }
 
     public function &div($attr = array()) {

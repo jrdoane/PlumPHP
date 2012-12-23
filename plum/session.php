@@ -41,7 +41,8 @@ class Session {
         // Use cookie sessions if there is no database.
         self::$_use_database = Config::get('dbsession', 'web');
 
-        // This must run after use_database is set.
+        // This must run after use_database is set. It removes all of the old 
+        // sessions.
         self::purge_sessions();
 
         if(self::$_use_database == true) {
@@ -49,7 +50,12 @@ class Session {
             $id = self::current_id();
             if(!$id) {
                 // No id? Use a fake one!
-                $id = self::generate_id();
+                do {
+                    $id = self::generate_id();
+                    $exists = $conn->select_count('session',
+                        array('sessid' => $id)
+                    );
+                } while ($exists == true);
             }
             $session = $conn->select('session', array('sessid' => $id), 1);
             $stimeout = Config::get('session_timeout', 'web');
@@ -147,6 +153,19 @@ class Session {
     }
 
     /**
+     * Removes a session variable.
+     *
+     * @param string    $name is the session var name.
+     * @return null
+     */
+    public static function nullify($name) {
+        if(isset(self::$_session[$name])) {
+            self::$_dirty = true;
+            unset(self::$_session[$name]);
+        }
+    }
+
+    /**
      * Invalidates the session and creates a new one.
      */
     public static function reset() {
@@ -161,7 +180,7 @@ class Session {
     public static function generate_id() {
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         $new_id = '';
-        for($i = 0; $i < 128; $i++) {
+        for($i = 0; $i < 192; $i++) {
             $new_id .= $chars[rand(0,strlen($chars)-1)];
         }
         return $new_id;
@@ -173,7 +192,9 @@ class Session {
             return $_COOKIE[$cname];
         }
         $id = self::generate_id();
-        setcookie($cname, $id, 0, '/', Config::get('cookie_domain', 'web'));
+        $timeout = Config::get('session_timeout', 'web');
+        $timeout = empty($timeout) ? 0 : time() + $timeout;
+        setcookie($cname, $id, $timeout, '/', Config::get('cookie_domain', 'web'));
         $_COOKIE[$cname] = $id;
         return $id;
     }
