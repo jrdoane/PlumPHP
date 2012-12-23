@@ -21,7 +21,7 @@ namespace Plum;
  * What a controller does. You always need to inherit this.
  */
 
-abstract class Controller {
+class Controller {
     /**
      * Controller variables.
      */

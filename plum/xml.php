@@ -69,7 +69,6 @@ class XmlBuilder {
         return $this->_top;
     }
 
-    // todo: start here.
     public function merge_builders(&$builder, $usetop=false) {
         $btop = $builder->get_top();
         if($usetop) {

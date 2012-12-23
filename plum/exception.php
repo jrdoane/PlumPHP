@@ -45,3 +45,5 @@ class HtmlNodeExpectedException extends \Plum\XmlNodeExpectedException {}
 class XmlParseException extends \Plum\LogicException {}
 class XmlBuildException extends \Plum\LogicException {}
 
+// Logging exception
+class LogException extends Exception {}

@@ -78,4 +78,12 @@ class HTTP {
         }
         return $data;
     }
+
+    public static function client_ip_address() {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    public static function client_hostname() {
+        return $_SERVER['REMOTE_HOST'];
+    }
 }

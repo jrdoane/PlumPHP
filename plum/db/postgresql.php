@@ -91,6 +91,28 @@ class Connection extends ConnectionShell {
         return $this->sql($sql, $params, $rs);
     }
 
+    public function select_count($table, $where) {
+        $table = $this->prep_table_name($table);
+        $where_str = $this->build_where($where);
+        $sql = "SELECT COUNT(*) FROM {$table} $where_str";
+        return $this->select_count_sql($sql, $where);
+    }
+
+    public function select_count_sql($sql, $params = array()) {
+        $result = $this->sql($sql, $params);
+        if(!$result) {
+            return false;
+        }
+        if(!is_array($result)) {
+            return false;
+        }
+        $result = array_pop($result);
+        if(isset($result->count)) {
+            return $result->count;
+        }
+        return false;
+    }
+
     public function table_identifier() {
         return '"';
     }
