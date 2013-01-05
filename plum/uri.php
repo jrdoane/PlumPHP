@@ -128,13 +128,17 @@ class Uri {
      * @param string    $querystring is everything after the wwwroot.
      * @return string
      */
-    public static function href($querystring='') {
+    public static function href($querystring='', $is_controller=true) {
         if(!empty($querystring)) {
             if(!strpos($querystring, '/') === 0) {
                 $querystring = '/' . $querystring;
             }
         }
-        $url = self::base() . $querystring;
+        $url = self::base();
+        $file = Config::get('wwwfile', 'web');
+        if($is_controller and !empty($file)) {
+            $url .= "{$file}/{$querystring}";
+        }
 
         return $url;
     }
