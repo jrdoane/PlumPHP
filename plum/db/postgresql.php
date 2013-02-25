@@ -139,7 +139,21 @@ class Connection extends ConnectionShell {
         if(is_object($data)) {
             $data = (array)$data;
         }
-        return $this->sql($sql, $data, $rs);
+
+        if($return) {
+            $sql .= "\nRETURNING *";
+        }
+        $data = $this->sql($sql, $data, $rs);
+        if($return) {
+            if($data) {
+                return array_pop($data);
+            }
+            return false;
+        }
+        if($data) {
+            return true;
+        }
+        return false;
     }
 
     private function build_values($array, $obj=null) {
@@ -186,7 +200,6 @@ class Connection extends ConnectionShell {
             $sql .= "\nRETURNING *";
         }
         return $this->sql($sql, $where, $rs);
-
     }
 
     public function select($table, $where=array(), $limit=0, $offset=0, $sort='', $rs=false) {

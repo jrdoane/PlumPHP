@@ -24,8 +24,6 @@ class View {
      * 
      * @param string    $name is the path to the view with or without .php
      * @param string    $vars are the vars to pass to the view script.
-     * @param bool      $template will subsitute string variables in bracketed 
-     *                  named variables in the template file.
      * @return mixed    A view can specify a return value by setting it in the 
      *                  view class.
      */

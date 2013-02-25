@@ -25,60 +25,47 @@ class Session {
     protected static $_stored_session; // Database session copy.
     protected static $_session;
     protected static $_dirty;
+    protected static $_expires_on;
 
     public static function init() {
-        // We only need the session to maintain a session id.
-        // If there is no database access, it will fall back to the php session.
-        // TODO: Add config setting to switch between the two.
         session_start();
-
-        // From here on we need to check to see if we:
-        // A: are connected to a database, the default is used for sessions.
-        // B: has a session table to use (we haven't implemented DDL in the db layer.)
-        // C: Has an existing session id record, if no create one and use the db.
-        $conn = DB::get_conn();
 
         // Use cookie sessions if there is no database.
         self::$_use_database = Config::get('dbsession', 'web');
 
-        // This must run after use_database is set. It removes all of the old 
-        // sessions.
-        self::purge_sessions();
-
         if(self::$_use_database == true) {
-            // Grab data from the database.
-            $id = self::current_id();
-            if(!$id) {
-                // No id? Use a fake one!
-                do {
-                    $id = self::generate_id();
-                    $exists = $conn->select_count('session',
-                        array('sessid' => $id)
-                    );
-                } while ($exists == true);
-            }
-            $session = $conn->select('session', array('sessid' => $id), 1);
-            $stimeout = Config::get('session_timeout', 'web');
+            self::$_stored_session = false;
+            self::$_session = array();
+            self::set_time_expires(time() + Config::get('session_timeout', 'web'));
+            $conn = DB::get_conn();
+            self::purge_sessions();
 
-            if(self::validate_session($session)) {
-                self::$_session = json_decode($session->data, true);
-                if(!empty(self::$_session['obj_names'])) {
-                    foreach(self::$_session as $sin => &$si) {
-                        if(in_array($sin, self::$_session['obj_names'])) {
-                            $si = (object)$si;
+            $cname = Config::get('cookie_session_name', 'web');
+            $id = $_COOKIE[$cname];
+
+            if($id) {
+                $session = $conn->select('session', array('session_id' => $id), 1);
+                if(self::validate_session($session)) {
+                    self::$_session = json_decode($session->data, true);
+                    if(!empty(self::$_session['obj_names'])) {
+                        foreach(self::$_session as $sin => &$si) {
+                            if(in_array($sin, self::$_session['obj_names'])) {
+                                $si = (object)$si;
+                            }
                         }
                     }
+                    self::$_stored_session = $session;
+                    self::update_cookie();
+                    return;
                 }
-                self::$_stored_session = $session;
-            } else {
-                if(!empty($session)) {
-                    $conn->delete('session', array('sessid' => $id));
-                }
-                self::$_session = array();
-                self::$_stored_session = false;
             }
+
+            self::save_session();
+            self::update_cookie();
+
         } else {
-            // Grab data from the php session (cookie.)
+            // Grab data from the php session.
+            // PHP handles this timeout and all that lovely jazz.
             self::$_session =& $_SESSION;
         }
     }
@@ -97,16 +84,16 @@ class Session {
         if(!is_object($session)) {
             return false;
         }
-        if(empty($session->time_modified)) {
-            return false;
-        }
-        if(!is_numeric($session->time_modified)) {
-            return false;
-        }
         $max_age = time() - Config::get('session_timeout', 'web');
         if($session->time_modified < $max_age) {
             return false;
         }
+
+        $client_agent = $_SERVER['HTTP_USER_AGENT'];
+        if($client_agent != $session->agent) {
+            return false;
+        }
+
         return true;
     }
 
@@ -169,37 +156,57 @@ class Session {
      * Invalidates the session and creates a new one.
      */
     public static function reset() {
-        $oldsessid = self::current_id();
-        $conn = DB::get_conn();
-        $conn->delete('session', array('sessid' => $oldsessid));
-        self::current_id(true);
+        if(!self::$_use_database) {
+            session_destroy();
+        } else {
+            $conn = DB::get_conn();
+            $oldsessid = self::current_id();
+            $conn->delete('session', array('session_id' => $oldsessid));
+            self::$_session = array();
+            self::$_stored_session = false;
+            self::save_session();
+            self::update_cookie();
+        }
         self::$_session = array();
         self::$_stored_session = false;
     }
 
-    public static function generate_id() {
-        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-        $new_id = '';
-        for($i = 0; $i < 192; $i++) {
-            $new_id .= $chars[rand(0,strlen($chars)-1)];
+    /**
+     * Update cookie stores the session_id that's in the database into a cookie 
+     * so we can look it up the next time the system loads.
+     *
+     * @return null
+     */
+    public static function update_cookie() {
+        $db = DB::get_conn();
+        $session_id = self::current_id();
+        $domain = Config::get('cookie_domain', 'web');
+        $cname = Config::get('cookie_session_name', 'web');
+
+        if(!self::$_stored_session or !$session_id) {
+            throw new Exception('Unable to update cookie. No session id exists.');
         }
-        return $new_id;
+
+        $_COOKIE[$cname] = $session_id;
+        setcookie($cname, $session_id, self::$_expires_on, '/', $domain);
     }
 
-    public static function current_id($regenerate_id=false) {
-        $cname = Config::get('cookie_session_name', 'web');
-        if(isset($_COOKIE[$cname])) {
-            return $_COOKIE[$cname];
+    public static function set_time_expires($time) {
+        self::$_expires_on = $time;
+    }
+
+    public static function current_id() {
+        if(self::$_stored_session) {
+            return self::$_stored_session->session_id;
         }
-        $id = self::generate_id();
-        $timeout = Config::get('session_timeout', 'web');
-        $timeout = empty($timeout) ? 0 : time() + $timeout;
-        setcookie($cname, $id, $timeout, '/', Config::get('cookie_domain', 'web'));
-        $_COOKIE[$cname] = $id;
-        return $id;
+        return false;
     }
 
     public static function shutdown() {
+        self::save_session();
+    }
+
+    public static function save_session() {
         $objs = array();
         if(!self::$_use_database) {
             return;
@@ -214,28 +221,33 @@ class Session {
         self::$_session['obj_names'] = $objs;
         $db = DB::get_conn();
         if(empty(self::$_stored_session)) {
-            $sessid = self::current_id();
-
             $session = (object)array(
-                'sessid' => $sessid,
                 'ip' => $_SERVER['REMOTE_ADDR'],
                 'agent' => $_SERVER['HTTP_USER_AGENT'],
                 'data' => json_encode(self::$_session),
                 'time_created' => time(),
                 'time_modified' => time()
             );
-            $db->insert('session', $session);
+            $r = $db->insert('session', $session, true);
         } else {
-            // TODO: Add config checks for agent and ip.
             $where = array(
-                'sessid' => self::current_id()
+                'session_id' => self::current_id()
             );
             $session = (object)array(
                 'data' => json_encode(self::$_session),
                 'time_modified' => time()
             );
 
-            $r = $db->update('session', $session, $where);
+            $r = $db->update('session', $session, $where, true);
+            if(!empty($r)) {
+                $r = array_pop($r);
+            }
         }
+
+        if(!$r) {
+            throw new Exception('Unable to store the session.');
+        }
+
+        self::$_stored_session = $r;
     }
 }
