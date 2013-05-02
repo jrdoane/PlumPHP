@@ -17,6 +17,8 @@
  */
 namespace Plum;
 
+class CookiesUnsupportedException extends Exception {}
+
 /**
  * Authentication class using plum-level controls.
  */
@@ -41,9 +43,14 @@ class Session {
             self::purge_sessions();
 
             $cname = Config::get('cookie_session_name', 'web');
-            $id = $_COOKIE[$cname];
 
-            if($id) {
+            if(isset($_COOKIE[$cname])) {
+                $id = $_COOKIE[$cname];
+            } else {
+                $id = null;
+            }
+
+            if(is_numeric($id)) {
                 $session = $conn->select('session', array('session_id' => $id), 1);
                 if(self::validate_session($session)) {
                     self::$_session = json_decode($session->data, true);
@@ -105,11 +112,18 @@ class Session {
         if(self::$_use_database == false) {
             return;
         }
-        $timeout = Config::get('session_timeout', 'web');
+        $timeout = Config::get('session_timeout', 'web', 3600);
+        $short_timeout = Config::get('session_short_timeout', 'web', 600);
+        $now = time();
         return $db->sql("
             DELETE FROM {session}
-            WHERE ((time_modified + {$timeout}) < ? )
-            ", array(time())
+            WHERE (
+                (time_modified + {$timeout}) < ?
+            ) OR (
+                time_modified = time_created AND
+                time_created + {$short_timeout} < ?
+            )
+            ", array($now, $now)
         );
     }
 
@@ -189,6 +203,23 @@ class Session {
 
         $_COOKIE[$cname] = $session_id;
         setcookie($cname, $session_id, self::$_expires_on, '/', $domain);
+        self::set_cookie_checker();
+    }
+
+    public static function get_cookie_checker_name() {
+        return Config::get('cookie_session_name', 'web') . '_checker';
+    }
+
+    public static function set_cookie_checker() {
+        $domain = Config::get('cookie_domain', 'web');
+        setcookie(self::get_cookie_checker_name(), 1, self::$_expires_on, '/', $domain);
+    }
+
+    public static function require_cookies() {
+        if(isset($_COOKIE[self::get_cookie_checker_name()])) {
+            return true;
+        }
+        throw new CookiesUnsupportedException();
     }
 
     public static function set_time_expires($time) {

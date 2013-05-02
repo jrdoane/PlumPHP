@@ -112,8 +112,8 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag("h{$level}", $attr, $text);
     }
 
-    public function &p($val, $attr = array()) {
-        return $this->tag('p', $attr, $val);
+    public function &p($val='', $attr = array(), $step_in=false) {
+        return $this->tag('p', $attr, $val, $step_in);
     }
 
     public function &img($attr) {
