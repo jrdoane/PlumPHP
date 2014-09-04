@@ -88,7 +88,14 @@ class Connection extends ConnectionShell {
         if($offset) {
             $sql .= " OFFSET $offset";
         }
-        return $this->sql($sql, $params, $rs);
+        $result = $this->sql($sql, $params, true);
+        if(!$result) {
+            return false;
+        }
+        if($rs) {
+            return $result;
+        }
+        return $result->simplify(true, $limit);
     }
 
     public function select_count($table, $where) {
@@ -213,10 +220,7 @@ class Connection extends ConnectionShell {
             $sql .= " ORDER BY $sort\n";
         }
 
-        $result = $this->select_sql($sql, $where, $limit, $offset, true);
-        if(!$rs) {
-            return $result->simplify(true, $limit);
-        }
+        $result = $this->select_sql($sql, $where, $limit, $offset, $rs);
         return $result;
     }
 

@@ -38,7 +38,7 @@ class Uri {
      * @param bool      $full will return the full web address.
      * @return mixed
      */
-    public static function current_uri($full = false) {
+    public static function current_uri($full = false, $strip_params = false) {
         $root = self::base();
         $file = Config::get('wwwfile', 'web');
         if($full) {
@@ -46,7 +46,7 @@ class Uri {
                 return null;
             }
             $pi = preg_replace('/^\//', '', $_SERVER['PATH_INFO']);
-            if(!empty($_GET)) {
+            if(!empty($_GET) and !$strip_params) {
                 $pi .= "?";
                 $gets = array();
                 foreach($_GET as $key => $get) {
