@@ -233,6 +233,28 @@ class Session {
         return false;
     }
 
+    public static function session_agent() {
+        if(self::$_stored_session) {
+            return self::$_stored_session->agent;
+        }
+        return false;
+    }
+
+    public static function session_ip() {
+        if(self::$_stored_session) {
+            return self::$_stored_session->ip;
+        }
+        return false;
+    }
+
+    public static function current_agent() {
+        return $_SERVER['HTTP_USER_AGENT'];
+    }
+
+    public static function current_ip() {
+        return HTTP::client_ip_address();
+    }
+
     public static function shutdown() {
         self::save_session();
     }
@@ -253,8 +275,8 @@ class Session {
         $db = DB::get_conn();
         if(empty(self::$_stored_session)) {
             $session = (object)array(
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'agent' => $_SERVER['HTTP_USER_AGENT'],
+                'ip' => self::current_ip(),
+                'agent' => self::current_agent(),
                 'data' => json_encode(self::$_session),
                 'time_created' => time(),
                 'time_modified' => time()

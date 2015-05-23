@@ -125,6 +125,9 @@ class Connection extends ConnectionShell {
     }
 
     public function process_input($var) {
+        if (is_null($var)) {
+            return 'NULL';
+        }
         if (is_numeric($var)) {
             return "{$var}";
         }

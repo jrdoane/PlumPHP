@@ -29,6 +29,8 @@ class Xml {
         if($value === null) {
             $out .= " />";
             return $out;
+        } elseif(is_object($value)) {
+            throw new Exception("Objects can not be turned into HTML.");
         }
         $out .= ">{$value}</$name>";
         return $out;

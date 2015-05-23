@@ -49,6 +49,52 @@ class HtmlBuilder extends XmlBuilder{
         $this->set_declaration(\Plum\HTML::doctype());
     }
 
+    protected function embedded_tag_split($tag_str) {
+      return preg_split('/(#|\.)/', $tag_str, null, PREG_SPLIT_DELIM_CAPTURE);
+    }
+
+    protected function embedded_tag($tag_str, $attrs = array()) {
+      if(is_string($attrs)) {
+        $tag_str .= $attrs;
+      }
+      if(is_null($attrs) or is_string($attrs)) {
+        $attrs = array();
+      }
+      $split = $this->embedded_tag_split($tag_str);
+      $tag_name = array_shift($split);
+      $classes = array();
+      $id = null;
+      $delim = null;
+      foreach($split as $i) {
+        if(is_null($delim)) {
+          $delim = $i;
+          continue;
+        }
+        $is_id = $delim == '#';
+        $is_class = $delim == '.';
+        $delim = null;
+        if($is_id) {
+          $id = $i;
+        } elseif($is_class) {
+          $classes[] = $i;
+        }
+      }
+      if(array_key_exists('class', $attrs) and !empty($classes)) {
+        $attrs['class'] .= ' ' . implode(' ', $classes);
+      } elseif(!empty($classes)) {
+        $attrs['class'] = implode(' ', $classes);
+      }
+      if(!is_null($id)) {
+        $attrs['id'] = $id;
+      }
+      return array($tag_name, $attrs);
+    }
+
+    public function &tag($name, $attr = array(), $value = null, $step_in = false) {
+      list($name, $attr) = $this->embedded_tag($name, $attr);
+      return parent::tag($name, $attr, $value, $step_in);
+    }
+
     public function &head() {
         return $this->tag('head', array(), '', true);
     }
@@ -184,6 +230,10 @@ class HtmlBuilder extends XmlBuilder{
         return $this->tag('table', $attr, '', true);
     }
 
+    public function &tbody($attr = array()) {
+      return $this->tag('tbody', $attr, '', true);
+    }
+
     public function &tr($attr = array()) {
         return $this->tag('tr', $attr, '', true);
     }
@@ -235,6 +285,10 @@ class HtmlBuilder extends XmlBuilder{
             'media' => 'screen'
         );
         return $this->link($attr);
+    }
+
+    public function &nav($attr = array()) {
+      return $this->tag('nav', $attr, '', true);
     }
 
 }

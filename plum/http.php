@@ -80,10 +80,14 @@ class HTTP {
     }
 
     public static function client_ip_address() {
+        if($_SERVER['HTTP_X_FORWARDED_FOR'] != "") {
+            $chain = preg_split("/[\s,]+/", $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return $chain[0];
+        }
         return $_SERVER['REMOTE_ADDR'];
     }
 
     public static function client_hostname() {
-        return $_SERVER['REMOTE_HOST'];
+        return gethostbyaddr(self::client_ip_address());
     }
 }

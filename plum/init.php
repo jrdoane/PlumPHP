@@ -129,7 +129,6 @@ Init::core('stdClass');
  */
 Init::core('Debug');
 Init::core('Config');
-Init::core('Lang');
 Init::core('DB');
 Init::core('DB\PostgreSQL');
 /**
