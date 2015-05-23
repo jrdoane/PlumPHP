@@ -142,6 +142,7 @@ Init::core('DB\PostgreSQL');
  * will be using standard out as this shouldn't ever happen so we're not going 
  * to worry about it.
  */
+Init::core('Lang');
 Init::core('Uri');
 Init::core('HTTP');
 Init::core('Session');
